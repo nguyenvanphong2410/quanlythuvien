@@ -5,7 +5,7 @@ const Employee = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         phone: { type: String, required: true },
-        status: { type: Number },
+        // status: { type: String, required: true }
         // access_token: { type: String, require: true },
         // refresh_token: { type: String, require: true },
     },

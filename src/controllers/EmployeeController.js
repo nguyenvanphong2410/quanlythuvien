@@ -4,25 +4,44 @@ const Employee = require('../models/EmployeeModel')
 
 const createUser = async (req, res) => {
     try {
-        const status = 0
         const { name, email, password, phone } = req.body;
         console.log(req.body);
-        const createdUser = await Employee.create({
-            email,
-            name,
-            password,
-            phone,
-            status,
-        })
-        if (createdUser) {
-            console.log('Tạo người dùng thành công ');
-            return res.status(201).json({
-                status: 'OK',
-                message: 'Tạo người dùng thành công',
-                data: createdUser
-            });
 
+        //Định dạng email
+        const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+        const isCheckEmail = reg.test(email);
+
+        //Kí tự đặc biệt
+        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const isTrueName = specialChars.test(name)
+        console.log(isTrueName);
+
+        //Kiểm tra 
+        if (!name || !email || !password || !phone) {
+            console.log('111');
+            //Kiểm tra tồn tại các giá trị
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Một hoặc nhiều trường không tồn tại !'
+            });
+        } else if (!isCheckEmail) {
+            console.log('222');
+            //Kiểm tra định dạng email
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Kiểm tra lại định dạng email !'
+            });
+        } else if (isTrueName) {
+            console.log('333');
+            //Kiểm tra Tên có chứa kí tự đặc biệt không
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Tên không đúng hoặc chứa kí tự đặc biệt!'
+            });
         }
+
+        const response = await EmployeeService.createEmployee(req.body);
+        return res.status(201).json(response);
 
     } catch (e) {
         return res.status(500).json({

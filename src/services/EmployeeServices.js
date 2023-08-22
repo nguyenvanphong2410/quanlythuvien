@@ -3,56 +3,50 @@ const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('./JwtServices');
 const dotenv = require('dotenv');
 
-const createUser = (newUser) => {
+const createEmployee = (newEmployee) => {
     return new Promise(async (resolve, reject) => {
-        const { name, email, password, confirmPassword, phone } = newUser;
+        const { name, email, password, phone } = newEmployee;
+        console.log('newEmployee:',newEmployee);
         try {
-            
-            // //Lấy ra 1 email 1phone
-            // const checkUser = await User.findOne({ email: email })
-            // const checkPhone = await User.findOne({ phone: phone })
-            
-            // //Kiem tra email da ton tai trong db
-            // if (checkUser !== null) {
-                //     resolve({
-                    //         status: 'Ok',
-            //         message: 'The email is already(Email này đã tồn tại)'
-            //     })
-            // }
-            
-            // //Kiem tra Phone da ton tai trong db
-            // if ((checkPhone !== null)) {
-                //     resolve({
-                    //         status: 'Ok',
-                    //         message: 'The Phone is already(Phone này đã tồn tại)'
-                    //     })
-                    // }
-                    
-                    // //Mã hóa pass
-                    // const hash = bcrypt.hashSync(password, 10);
-                    // console.log('hash', hash);
-                    
-                    // const createdUser = await User.create({
-                        //     name,
-                        //     email,
-                        //     password: hash,
-                        //     phone
-                        // })
-                        
-                        
-                        // const createdUser = await User.create({
-            //     name,
-            //     email,
-            //     password,
-            //     phone
-            // })
-            // if (createdUser) {
-            //     resolve({
-                //         status: 'OK',
-            //         message: 'Tạo ng dùng thành công SUCCESS',
-            //         data: createdUser
-            //     })
-            // }
+
+            //Lấy ra 1 email 1phone
+            const checkUser = await Employee.findOne({ email: email })
+            const checkPhone = await Employee.findOne({ phone: phone })
+
+            //Kiem tra email da ton tai trong db
+            if (checkUser !== null) {
+                resolve({
+                    status: 'Ok',
+                    message: 'Email này đã tồn tại'
+                })
+            } else if ((checkPhone)) {
+                //Kiem tra Phone da ton tai trong db
+                resolve({
+                    status: 'Ok',
+                    message: 'Phone này đã tồn tại'
+                })
+                return ;
+            }
+
+            //Mã hóa pass
+            const hash = bcrypt.hashSync(password, 10);
+            console.log('hash', hash);
+
+            const createdEmployee = await Employee.create({
+                name,
+                email, 
+                password: hash, 
+                phone
+            });
+
+            if (createdEmployee) {
+                console.log('Tạo người dùng thành công ');
+                resolve({
+                    status: 'OK',
+                    message: 'Tạo ng dùng thành công SUCCESS',
+                    data: createdEmployee
+                })
+            }
         } catch (e) {
             reject(e);
         }
@@ -77,8 +71,8 @@ const getAllUser = () => {
     })
 }
 // const loginUser = (userLogin) => {
-    //     return new Promise(async (resolve, reject) => {
-        //         const { name, email, password, confirmPassword, phone } = userLogin;
+//     return new Promise(async (resolve, reject) => {
+//         const { name, email, password, confirmPassword, phone } = userLogin;
 //         try {
 //             //Lấy ra 1 email 1phone
 //             const checkUser = await User.findOne({ email: email })
@@ -230,7 +224,7 @@ const getAllUser = () => {
 
 
 module.exports = {
-    createUser,
+    createEmployee,
     // loginUser,
     // updateUser,
     // deleteUser,
