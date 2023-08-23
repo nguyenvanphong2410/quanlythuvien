@@ -71,8 +71,90 @@ const getAllAuthor = async (req, res) => {
     }
 };
 
+//getDetailsAuthor
+const getDetailsAuthor = async (req, res) => {
+    try {
+        const authorId = req.params.id
+
+        //Kiem tra userId co hop le
+        if (!authorId) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The bookId is required(bookId kh hợp lệ)'
+            });
+        }
+
+        console.log('ID của 1 book: ', authorId);
+        const response = await AuthorService.getDetailsAuthor(authorId);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: ' getDetailsAuthor Loi nha '
+        })
+    }
+};
+
+//updateAuthor
+const updateAuthor = async (req, res) => {
+    try {
+        //Nhận vào user id qua url
+        const authorId = req.params.id
+        const { name, date_of_birth, story } = req.body;
+        const data = req.body;
+        console.log(data);
+
+        //Kí tự đặc biệt
+        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const isTrueName = specialChars.test(name)
+        const isTrueStory = specialChars.test(story)
+
+        //Kiem tra bookId co hop le
+        if (!authorId) {
+            console.log('000')
+            return res.json({
+                status: 'ERR',
+                message: 'Tác giả id không hợp lệ !'
+            });
+        }
+
+        //Kiểm tra 
+        if (!name || !date_of_birth || !story ) {
+            console.log('111');
+            //Kiểm tra tồn tại các giá trị
+            return res.json({
+                status: 'ERR',
+                message: 'Một hoặc nhiều trường không tồn tại !'
+            });
+        } else if (isTrueName) {
+            console.log('333');
+            //Kiểm tra Tên tác giả 
+            return res.json({
+                status: 'ERR',
+                message: 'Tên tác giả không hợp lệ !'
+            });
+        } else if (isTrueStory) {
+            //Kiểm tra Tiểu sử 
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Tiểu sử không hợp lệ!'
+            });
+        } 
+
+        console.log('ID của 1 tác giả: ', authorId);
+        const response = await AuthorService.updateAuthor(authorId, data);
+
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: 'updateAuthor Lỗi '
+        })
+    }
+};
+
+
 module.exports = {
     createAuthor,
     getAllAuthor,
-
+    getDetailsAuthor,
+    updateAuthor
 }

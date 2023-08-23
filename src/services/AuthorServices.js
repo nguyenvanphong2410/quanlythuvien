@@ -57,7 +57,7 @@ const createUser = (newUser) => {
     })
 }
 
-//getAllUser User Service
+//getAllUser 
 const getAllAuthor = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -75,7 +75,67 @@ const getAllAuthor = () => {
     })
 }
 
+//getDetailsAuthor
+const getDetailsAuthor = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            //Lấy ra 1 tác giả theo id
+            const author = await Author.findOne({
+                _id: id
+            })
+
+            //Kiem tra tác giả khong ton tai 
+            if (author === null) {
+                return reject.status(500).json({
+                    status: 'Ok',
+                    message: 'Tác giả này không tồn tại !'
+                })
+            }
+
+            resolve({
+                status: 'OK',
+                message: 'Lấy ra thông tin của 1 tác giả thành công SUCCESS',
+                data: author
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+//updateAuthor
+const updateAuthor = (id, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const checkUser = await Author.findOne({ _id: id })
+
+            if (checkUser === null) {
+                //Kiem tra tác giả khong ton tai 
+                return res.json({
+                    status: 'ERR',
+                    message: 'Tác giả này không tồn tại !)'
+                })
+            } 
+            const updatedAuthor = await Author.findByIdAndUpdate(id, data, { new: true });
+
+            console.log('Book User', updatedAuthor);
+
+            resolve({
+                status: 'OK',
+                message: 'Cập nhật thông tin tác gia thành công SUCCESS',
+                data: updatedAuthor
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     createUser,
     getAllAuthor,
+    getDetailsAuthor,
+    updateAuthor,
 }

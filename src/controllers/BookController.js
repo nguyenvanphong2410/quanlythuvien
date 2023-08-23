@@ -41,7 +41,7 @@ const createBook = async (req, res) => {
                 status: 'ERR',
                 message: 'Nội dung không hợp lệ!'
             });
-        } 
+        }
         else if (total < 0 || stock < 0) {
             // Kiểm tra total và stock có phải là số âm ?
             return res.status(500).json({
@@ -88,9 +88,112 @@ const getAllBook = async (req, res) => {
     }
 };
 
+//getDetailsBook
+const getDetailsBook = async (req, res) => {
+    try {
+        const bookId = req.params.id
 
+        //Kiem tra userId co hop le
+        if (!bookId) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The bookId is required(bookId kh hợp lệ)'
+            });
+        }
+
+        console.log('ID của 1 book: ', bookId);
+        const response = await BookServices.getDetailsBook(bookId);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: ' getDetailsBook Loi nha '
+        })
+    }
+};
+
+//Update User
+const updateBook = async (req, res) => {
+    try {
+        //Nhận vào user id qua url
+        const bookId = req.params.id
+        const { name, year_creation, description, content, total, stock } = req.body;
+        const data = req.body;
+        console.log(data);
+
+        //Kí tự đặc biệt
+        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const isTrueName = specialChars.test(name)
+        const isTrueTotal = specialChars.test(total)
+        const isTrueStock = specialChars.test(stock)
+        const isTrueDescription = specialChars.test(description)
+        const isTrueContent = specialChars.test(content)
+
+        //Kiem tra bookId co hop le
+        if (!bookId) {
+            console.log('000')
+            return res.json({
+                status: 'ERR',
+                message: 'bookId không hợp lệ !'
+            });
+        }
+
+        //Kiểm tra 
+        if (!name || !year_creation || !description || !content || !total || !stock) {
+            console.log('111');
+            //Kiểm tra tồn tại các giá trị
+            return res.json({
+                status: 'ERR',
+                message: 'Một hoặc nhiều trường không tồn tại !'
+            });
+        } else if (isTrueName) {
+            console.log('333');
+            //Kiểm tra Tên sách 
+            return res.json({
+                status: 'ERR',
+                message: 'Tên sách không hợp lệ !'
+            });
+        } else if (isTrueDescription) {
+            //Kiểm tra Mô tả 
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Mô tả không hợp lệ!'
+            });
+        } else if (isTrueContent) {
+            //Kiểm tra Nội dung 
+            return res.status(500).json({
+                status: 'ERR',
+                message: 'Nội dung không hợp lệ!'
+            });
+        } else if (isTrueTotal || total < 0  ) {
+            console.log('444');
+            //Kiểm tra total 
+            return res.json({
+                status: 'ERR',
+                message: 'Tổng số lượng không hợp lệ !'
+            });
+        } else if(isTrueStock || stock < 0 ) {
+            console.log('444');
+            //Kiểm tra stock 
+            return res.json({
+                status: 'ERR',
+                message: 'Số lượng tồn không hợp lệ !'
+            });
+        }
+
+        console.log('ID của 1 user: ', bookId);
+        const response = await BookServices.updateBook(bookId, data);
+
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: 'updatedBook Lỗi '
+        })
+    }
+};
 
 module.exports = {
     createBook,
     getAllBook,
+    getDetailsBook,
+    updateBook,
 }

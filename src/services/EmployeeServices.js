@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 const createEmployee = (newEmployee) => {
     return new Promise(async (resolve, reject) => {
         const { name, email, password, phone } = newEmployee;
-        console.log('newEmployee:',newEmployee);
+        console.log('newEmployee:', newEmployee);
         try {
 
             //Lấy ra 1 email 1phone
@@ -25,7 +25,7 @@ const createEmployee = (newEmployee) => {
                     status: 'Ok',
                     message: 'Phone này đã tồn tại'
                 })
-                return ;
+                return;
             }
 
             //Mã hóa pass
@@ -34,8 +34,8 @@ const createEmployee = (newEmployee) => {
 
             const createdEmployee = await Employee.create({
                 name,
-                email, 
-                password: hash, 
+                email,
+                password: hash,
                 phone
             });
 
@@ -70,93 +70,105 @@ const getAllUser = () => {
         }
     })
 }
-// const loginUser = (userLogin) => {
-//     return new Promise(async (resolve, reject) => {
-//         const { name, email, password, confirmPassword, phone } = userLogin;
-//         try {
-//             //Lấy ra 1 email 1phone
-//             const checkUser = await User.findOne({ email: email })
+const loginEmployee = (employeeLogin) => {
+    return new Promise(async (resolve, reject) => {
+        const { name, email, password, phone } = employeeLogin;
+        try {
+            //Lấy ra 1 email 1phone
+            const checkUser = await Employee.findOne({ email: email })
 
-//             //Login : Kiem tra email khong ton tai 
-//             if (checkUser === null) {
-//                 resolve({
-//                     status: 'Ok',
-//                     message: 'The email is not defined(Email này không tồn tại trong db)'
-//                 })
-//             }
+            //Login : Kiem tra email khong ton tai 
+            if (checkUser === null) {
+                return res.status(500).json({
+                    status: 'Ok',
+                    message: 'The email is not defined(Email này không tồn tại trong db)'
+                })
+            }
 
-//             //so sanh password dưa vài
-//             const comparePassword = bcrypt.compareSync(password, checkUser.password);
-//             // console.log('So sánh password: ', comparePassword);
+            //so sanh password dưa vào
+            const comparePassword = bcrypt.compareSync(password, checkUser.password);
+            // console.log('So sánh password: ', comparePassword);
 
-//             //Kiểm tra password sai
-//             if (!comparePassword) {
-//                 resolve({
-//                     status: 'Ok',
-//                     message: 'The password or user is incorrect(Mk hoặc ngdg không chính xác)'
-//                 })
-//             }
+            //Kiểm tra password sai
+            if (!comparePassword) {
+                return res.status(500).json({
+                    status: 'Ok',
+                    message: 'The password or user is incorrect(Mk hoặc ngdg không chính xác)'
+                })
+            }
 
-//             //Sau khi logi thanh cong lấy token
-//             const access_token = await genneralAccessToken({
-//                 //truyền payload vào 
-//                 id: checkUser.id,
-//                 isAdmin: checkUser.isAdmin
-//             })
+            //Sau khi logi thanh cong lấy token
+            const access_token = await genneralAccessToken({
+                //truyền payload vào 
+                id: checkUser.id,
+                isAdmin: checkUser.isAdmin
+            })
 
-//             //Trả về refresh token
-//             const refresh_token = await genneralRefreshToken({
-//                 id: checkUser.id,
-//                 isAdmin: checkUser.isAdmin
-//             })
+            //Trả về refresh token
+            const refresh_token = await genneralRefreshToken({
+                id: checkUser.id,
+                isAdmin: checkUser.isAdmin
+            })
 
-//             console.log('>> Trả về access_token', access_token);
+            console.log('>> Trả về access_token', access_token);
 
-//             resolve({
-//                 status: 'OK',
-//                 message: 'Đăng nhập thành công SUCCESS',
-//                 access_token,
-//                 refresh_token
-//             })
+            resolve({
+                status: 'OK',
+                message: 'Đăng nhập thành công SUCCESS',
+                access_token,
+                refresh_token
+            })
 
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
-// //Update User Service
-// const updateUser = (id, data) => {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             //Lấy ra 1 email 1phone
-//             const checkUser = await User.findOne({
-//                 _id: id
-//             })
-//             console.log('Check User', checkUser);
+//Update User Service
+const updateEmployee = (id, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const checkUser = await Employee.findOne({ _id: id })
+            const checkEmail = await Employee.findOne({ email: data.email });
+            const checkPhone = await Employee.findOne({ phone: data.phone });
 
-//             //Login : Kiem tra user khong ton tai 
-//             if (checkUser === null) {
-//                 resolve({
-//                     status: 'Ok',
-//                     message: 'The user is not defined(User này không tồn tại trong db)'
-//                 })
-//             }
+            //Kiem tra employee khong ton tai 
+            if (checkUser === null) {
+                return res.json({
+                    status: 'ERR',
+                    message: 'Nhân viên này không tồn tại !'
+                })
+            } else if (checkEmail) {
+                //Kiem tra email da ton tai 
+                return res.json({
+                    status: 'ERR',
+                    message: 'Email này đã tồn tại !'
+                })
+            } else if (checkPhone) {
+                //Kiem tra Phone da ton tai 
+                return res.json({
+                    status: 'ERR',
+                    message: 'Phone này đã tồn tại !'
+                })
+            }
 
-//             const updatedUser = await User.findByIdAndUpdate(id, data, { new: true })
-//             console.log('Update User', updatedUser);
+            // const updatedUser = await Employee.findByIdAndUpdate(id, data);
+            const updatedUser = await Employee.findByIdAndUpdate(id, data, { new: true });
 
-//             resolve({
-//                 status: 'OK',
-//                 message: 'Cập nhật thông tin user thành công SUCCESS',
-//                 data: updatedUser
-//             })
+            console.log('Update User', updatedUser);
 
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
+            resolve({
+                status: 'OK',
+                message: 'Cập nhật thông tin user thành công SUCCESS',
+                data: updatedUser
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 // //deleteUser User Service
 // const deleteUser = (id) => {
@@ -191,44 +203,44 @@ const getAllUser = () => {
 // }
 
 
-// //getDetailsUser User Service
-// const getDetailsUser = (id) => {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             //Lấy ra 1 email theo id
-//             const user = await User.findOne({
-//                 _id: id
-//             })
+//getDetailsEmployee
+const getDetailsEmployee = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            //Lấy ra 1 email theo id
+            const user = await Employee.findOne({
+                _id: id
+            })
 
-//             //Login : Kiem tra user khong ton tai 
-//             if (user === null) {
-//                 resolve({
-//                     status: 'Ok',
-//                     message: 'The user is not defined(User này không tồn tại trong db)'
-//                 })
-//             }
+            //Login : Kiem tra user khong ton tai 
+            if (user === null) {
+                return reject.status(500).json({
+                    status: 'Ok',
+                    message: 'The user is not defined(User này không tồn tại trong db)'
+                })
+            }
 
-//             resolve({
-//                 status: 'OK',
-//                 message: 'Lấy ra thông thi của 1 user thành công SUCCESS',
-//                 data: user
-//             })
+            resolve({
+                status: 'OK',
+                message: 'Lấy ra thông thi của 1 user thành công SUCCESS',
+                data: user
+            })
 
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 
 
 
 module.exports = {
     createEmployee,
-    // loginUser,
-    // updateUser,
+    loginEmployee,
+    updateEmployee,
+    getDetailsEmployee,
     // deleteUser,
     getAllUser,
-    // getDetailsUser,
 
 }

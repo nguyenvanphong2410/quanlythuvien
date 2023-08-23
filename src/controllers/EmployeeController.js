@@ -64,63 +64,104 @@ const getAllUser = async (req, res) => {
     }
 };
 
-// const loginUser = async (req, res) => {
-//     try {
-//         const { name, email, password, confirmPassword, phone } = req.body;
-//         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-//         const isCheckEmail = reg.test(email);
+const loginEmployee = async (req, res) => {
+    try {
+        const { name, email, password, phone } = req.body;
+        const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+        const isCheckEmail = reg.test(email);
 
-//         if (!name || !email || !password || !confirmPassword || !phone) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The input is required'
-//             });
-//         } else if (!isCheckEmail) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The input is email'
-//             });
-//         } else if (password !== confirmPassword) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The password is equal confirmPassword'
-//             });
-//         }
+        if (!name || !email || !password || !phone) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The input is required'
+            });
+        } else if (!isCheckEmail) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The input is email'
+            });
+        }
+        console.log('Kiểm tra định dạng email: ', isCheckEmail);
 
-//         console.log('Kiểm tra định dạng email: ', isCheckEmail);
+        const response = await EmployeeService.loginEmployee(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        // return res.status(404).json({
+        return res.status(500).json({
+            status: 'ERR',
+            message: 'Đăng nhập thất bại !'
+        })
+    }
+};
 
-//         const response = await UserService.loginUser(req.body);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: e
-//         })
-//     }
-// };
+//Update User
+const updateEmployee = async (req, res) => {
+    try {
+        //Nhận vào user id qua url
+        const userId = req.params.id
+        const { name, email, password, phone } = req.body;
+        const data = req.body;
+        console.log(data);
 
-// //Update User
-// const updateUser = async (req, res) => {
-//     try {
-//         //Nhận vào user id qua url
-//         const userId = req.params.id
+        //Định dạng email
+        const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+        const isCheckEmail = reg.test(email);
 
-//         //Kiem tra userId co hop le
-//         if (!userId) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The userId is required(userId kh hợp lệ)'
-//             });
-//         }
+        //Kí tự đặc biệt
+        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const isTrueName = specialChars.test(name)
+        const isTruePhone = specialChars.test(phone)
 
-//         console.log('ID của 1 user: ', userId);
-//         const response = await UserService.updateUser(userId, data);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: 'Loi nha, co the la loi id '
-//         })
-//     }
-// };
+        //Kiem tra userId co hop le
+        if (!userId) {
+            console.log('111')
+            return res.json({
+                status: 'ERR',
+                message: 'The userId is required(userId kh hợp lệ)'
+            });
+        }
+        //Kiểm tra 
+        if (!name || !email || !phone) {
+            console.log('111');
+            //Kiểm tra tồn tại các giá trị
+            return res.json({
+                status: 'ERR',
+                message: 'Một hoặc nhiều trường không tồn tại !'
+            });
+        } else if (!isCheckEmail) {
+            console.log('222');
+            //Kiểm tra định dạng email
+            return res.json({
+                status: 'ERR',
+                message: 'Kiểm tra lại định dạng email !'
+            });
+        } else if (isTrueName) {
+            console.log('333');
+            //Kiểm tra Tên có chứa kí tự đặc biệt không
+            return res.json({
+                status: 'ERR',
+                message: 'Tên không đúng hoặc chứa kí tự đặc biệt!'
+            });
+        } else if (isTruePhone) {
+            console.log('444');
+            //Kiểm tra Phone có chứa kí tự đặc biệt không
+            return res.json({
+                status: 'ERR',
+                message: 'Phone không đúng hoặc chứa kí tự đặc biệt!'
+            });
+        }
+
+        console.log('ID của 1 user: ', userId);
+        const response = await EmployeeService.updateEmployee(userId, data);
+        console.log('222');
+
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: 'updateEmployee Loi nha, co the la loi id '
+        })
+    }
+};
 
 // //Delete User
 // const deleteUser = async (req, res) => {
@@ -147,29 +188,28 @@ const getAllUser = async (req, res) => {
 // };
 
 
-// //getDetailsUser
-// const getDetailsUser = async (req, res) => {
-//     try {
-//         const userId = req.params.id
-//         const token = req.headers
+//getDetailsEmployee
+const getDetailsEmployee = async (req, res) => {
+    try {
+        const userId = req.params.id
 
-//         //Kiem tra userId co hop le
-//         if (!userId) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The userId is required(userId kh hợp lệ)'
-//             });
-//         }
+        //Kiem tra userId co hop le
+        if (!userId) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The userId is required(userId kh hợp lệ)'
+            });
+        }
 
-//         console.log('ID của 1 user: ', userId);
-//         const response = await UserService.getDetailsUser(userId);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: ' getDetailsUser Loi nha, co the la loi id '
-//         })
-//     }
-// };
+        console.log('ID của 1 user: ', userId);
+        const response = await EmployeeService.getDetailsEmployee(userId);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: ' getDetailsEmployee Loi nha, co the la loi id '
+        })
+    }
+};
 
 // //refreshToken
 // const refreshToken = async (req, res) => {
@@ -197,10 +237,10 @@ const getAllUser = async (req, res) => {
 
 module.exports = {
     createUser,
-    // loginUser,
-    // updateUser,
-    // deleteUser,
+    loginEmployee,
     getAllUser,
-    // getDetailsUser,
+    updateEmployee,
+    getDetailsEmployee,
+    // deleteUser,
     // refreshToken
 }
