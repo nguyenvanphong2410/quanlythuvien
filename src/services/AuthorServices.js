@@ -61,7 +61,7 @@ const createUser = (newUser) => {
 const getAllAuthor = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allAuthor = await Author.find();
+            const allAuthor = await Author.find({deleted: false});
             
             resolve({
                 status: 'OK',
@@ -131,6 +131,37 @@ const updateAuthor = (id, data) => {
             reject(e);
         }
     })
+};
+
+//deleteAuthor
+const deleteAuthor = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            //Lấy ra 1 email 1phone
+            const checkAuthor = await Author.findOne({
+                _id: id
+            })
+
+            //Kiem tra tác giả khong ton tai 
+            if (checkAuthor === null) {
+                resolve({
+                    status: 'ERR',
+                    message: 'Tác giả không tồn tại'
+                })
+            }
+
+            await checkAuthor.delete()
+
+            resolve({
+                status: 'OK',
+                message: 'Xóa tác giả thành công SUCCESS',
+
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
 }
 
 module.exports = {
@@ -138,4 +169,5 @@ module.exports = {
     getAllAuthor,
     getDetailsAuthor,
     updateAuthor,
+    deleteAuthor
 }

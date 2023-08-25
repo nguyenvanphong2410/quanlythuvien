@@ -2,8 +2,10 @@ const Employee = require('../models/EmployeeModel')
 const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('./JwtServices');
 const dotenv = require('dotenv');
+const mongooseDelete = require('mongoose-delete')
 
-const createEmployee = (newEmployee) => {
+
+const createEmployee = (newEmployee,res) => {
     return new Promise(async (resolve, reject) => {
         const { name, email, password, phone } = newEmployee;
         console.log('newEmployee:', newEmployee);
@@ -15,17 +17,17 @@ const createEmployee = (newEmployee) => {
 
             //Kiem tra email da ton tai trong db
             if (checkUser !== null) {
-                resolve({
-                    status: 'Ok',
+                return res.json({
+                    status: 'ERR',
                     message: 'Email này đã tồn tại'
                 })
             } else if ((checkPhone)) {
                 //Kiem tra Phone da ton tai trong db
-                resolve({
-                    status: 'Ok',
+                return res.json({
+                    status: 'ERR',
                     message: 'Phone này đã tồn tại'
                 })
-                return;
+                
             }
 
             //Mã hóa pass
@@ -41,10 +43,10 @@ const createEmployee = (newEmployee) => {
 
             if (createdEmployee) {
                 console.log('Tạo người dùng thành công ');
-                resolve({
+                return res.json({
                     status: 'OK',
-                    message: 'Tạo ng dùng thành công SUCCESS',
-                    data: createdEmployee
+                    message: 'Đăng ký thành công',
+                    // data: createdEmployee
                 })
             }
         } catch (e) {
@@ -57,7 +59,7 @@ const createEmployee = (newEmployee) => {
 const getAllUser = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allUser = await Employee.find();
+            const allUser = await Employee.find({deleted: false});
 
             resolve({
                 status: 'OK',
@@ -72,14 +74,14 @@ const getAllUser = () => {
 }
 const loginEmployee = (employeeLogin) => {
     return new Promise(async (resolve, reject) => {
-        const { name, email, password, phone } = employeeLogin;
+        const { email, password } = employeeLogin;
         try {
             //Lấy ra 1 email 1phone
             const checkUser = await Employee.findOne({ email: email })
 
             //Login : Kiem tra email khong ton tai 
             if (checkUser === null) {
-                return res.status(500).json({
+                return res.json({
                     status: 'Ok',
                     message: 'The email is not defined(Email này không tồn tại trong db)'
                 })
@@ -91,7 +93,7 @@ const loginEmployee = (employeeLogin) => {
 
             //Kiểm tra password sai
             if (!comparePassword) {
-                return res.status(500).json({
+                return res.json({
                     status: 'Ok',
                     message: 'The password or user is incorrect(Mk hoặc ngdg không chính xác)'
                 })
@@ -101,13 +103,15 @@ const loginEmployee = (employeeLogin) => {
             const access_token = await genneralAccessToken({
                 //truyền payload vào 
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin
+                email: checkUser.email,
+                name: checkUser.name,
+                // isAdmin: checkUser.isAdmin
             })
 
             //Trả về refresh token
             const refresh_token = await genneralRefreshToken({
                 id: checkUser.id,
-                isAdmin: checkUser.isAdmin
+                // isAdmin: checkUser.isAdmin
             })
 
             console.log('>> Trả về access_token', access_token);
@@ -126,15 +130,15 @@ const loginEmployee = (employeeLogin) => {
 }
 
 //Update User Service
-const updateEmployee = (id, data) => {
+const updateEmployee = (id, data, res) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const checkUser = await Employee.findOne({ _id: id })
+            const checkEmployee = await Employee.findOne({ _id: id })
             const checkEmail = await Employee.findOne({ email: data.email });
             const checkPhone = await Employee.findOne({ phone: data.phone });
 
             //Kiem tra employee khong ton tai 
-            if (checkUser === null) {
+            if (checkEmployee === null) {
                 return res.json({
                     status: 'ERR',
                     message: 'Nhân viên này không tồn tại !'
@@ -170,37 +174,37 @@ const updateEmployee = (id, data) => {
     })
 }
 
-// //deleteUser User Service
-// const deleteUser = (id) => {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             //Lấy ra 1 email 1phone
-//             const checkUser = await User.findOne({
-//                 _id: id
-//             })
-//             console.log('Check User', checkUser);
+//deleteEmployee
+const deleteEmployee = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            //Lấy ra 1 email 1phone
+            const checkEmployee = await Employee.findOne({
+                _id: id
+            })
+            console.log('Check User', checkEmployee);
 
-//             //Login : Kiem tra user khong ton tai 
-//             if (checkUser === null) {
-//                 resolve({
-//                     status: 'Ok',
-//                     message: 'The user is not defined(User này không tồn tại trong db)'
-//                 })
-//             }
+            //Login : Kiem tra user khong ton tai 
+            if (checkEmployee === null) {
+                resolve({
+                    status: 'ERR',
+                    message: 'Nhân viên không tồn tại'
+                })
+            }
 
-//             await User.findByIdAndDelete(id)
+            await checkEmployee.delete()
 
-//             resolve({
-//                 status: 'OK',
-//                 message: 'Xóa user thành công SUCCESS',
+            resolve({
+                status: 'OK',
+                message: 'Xóa nhân viên thành công SUCCESS',
 
-//             })
+            })
 
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 
 //getDetailsEmployee
@@ -222,7 +226,7 @@ const getDetailsEmployee = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Lấy ra thông thi của 1 user thành công SUCCESS',
+                message: 'Lấy ra thông thi của 1 nhân viên thành công SUCCESS',
                 data: user
             })
 
@@ -240,7 +244,7 @@ module.exports = {
     loginEmployee,
     updateEmployee,
     getDetailsEmployee,
-    // deleteUser,
+    deleteEmployee,
     getAllUser,
 
 }

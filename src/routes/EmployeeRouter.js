@@ -8,7 +8,8 @@ router.post('/login', employeeController.loginEmployee);
 router.get('/getAll', employeeController.getAllUser);
 router.put('/update-employee/:id', employeeController.updateEmployee);
 router.get('/get-details/:id', employeeController.getDetailsEmployee);
-// router.delete('/delete-user/:id', authMiddleware, employeeController.deleteUser);
+router.post('/get-info', employeeController.getInfoEmployee);
+router.delete('/delete-employee/:id',employeeController.deleteEmployee);
 // router.post('/refresh-token', employeeController.refreshToken);
 
 

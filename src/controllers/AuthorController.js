@@ -8,7 +8,7 @@ const createAuthor = async (req, res) => {
         console.log(req.body);
 
         //Kí tự đặc biệt
-        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
         const isTrueName = specialChars.test(name)
         const isTrueStory = specialChars.test(story)
         console.log(isTrueName);
@@ -16,19 +16,19 @@ const createAuthor = async (req, res) => {
         if (!name || !date_of_birth || !story ) {
             
             //Kiểm tra tồn tại các giá trị
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Một hoặc nhiều trường không tồn tại !'
             });
         } else if (isTrueName) {
             //Kiểm tra Tên có chứa kí tự đặc biệt không
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Tên không hợp lệ!'
             });
         }else if (isTrueStory) {
             //Kiểm tra Story có chứa kí tự đặc biệt không
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Tiểu sử không hợp lệ!'
             });
@@ -42,7 +42,7 @@ const createAuthor = async (req, res) => {
 
         if (createdAuthor) {
             console.log('Tạo mới tác giả thành công');
-            return res.status(201).json({
+            return res.json({
                 status: 'OK',
                 message: 'Tạo mới tác giả thành công',
                 data: createdAuthor
@@ -51,7 +51,7 @@ const createAuthor = async (req, res) => {
         }
 
     } catch (e) {
-        return res.status(500).json({
+        return res.json({
             status: 'ERR',
             message: 'Lỗi tạo mới tác giả!'
         })
@@ -104,7 +104,7 @@ const updateAuthor = async (req, res) => {
         console.log(data);
 
         //Kí tự đặc biệt
-        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
         const isTrueName = specialChars.test(name)
         const isTrueStory = specialChars.test(story)
 
@@ -152,9 +152,33 @@ const updateAuthor = async (req, res) => {
 };
 
 
+//deleteAuthor
+const deleteAuthor = async (req, res) => {
+    try {
+        const authorId = req.params.id
+
+        //Kiem tra authorId co hop le
+        if (!authorId) {
+            return res.status(200).join({
+                status: 'ERR',
+                message: 'Khong ton tai tác giả'
+            });
+        }
+
+        const response = await AuthorService.deleteAuthor(authorId);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e)
+        return res.status(404).json({
+            message: 'deleteAuthor Lỗi '
+        })
+    }
+};
+
 module.exports = {
     createAuthor,
     getAllAuthor,
     getDetailsAuthor,
-    updateAuthor
+    updateAuthor,
+    deleteAuthor
 }

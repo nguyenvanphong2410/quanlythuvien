@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const mongooseDelete = require('mongoose-delete')
+
 const Employee = new mongoose.Schema(
     {
         name: { type: String, required: true },
@@ -13,5 +15,9 @@ const Employee = new mongoose.Schema(
         timestamps: true
     }
 );
+
+// add plugin
+Employee.plugin(mongooseDelete);
+
 const Employees = mongoose.model("Employee", Employee);
 module.exports = Employees;

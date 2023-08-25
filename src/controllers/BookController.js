@@ -4,7 +4,7 @@ const Book = require('../models/BookModel')
 const createBook = async (req, res) => {
     try {
 
-        const { name, year_creation, description, content, total, stock } = req.body;
+        const { name, year_creation, description, content, total, stock , category_id} = req.body;
         console.log(req.body);
 
         // Chuyển đổi total và stock sang số nguyên
@@ -12,41 +12,41 @@ const createBook = async (req, res) => {
         const stockInt = parseInt(stock, 10);
 
         //Kí tự đặc biệt
-        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;;
         const isTrueName = specialChars.test(name)
         const isTrueDescription = specialChars.test(description)
         const isTrueContent = specialChars.test(content)
 
-        if (!name || !year_creation || !description || !content || !total || !stock) {
+        if (!name || !year_creation || !description || !content || !total || !stock || !category_id) {
             //Kiểm tra tồn tại các giá trị
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Một hoặc nhiều trường không tồn tại !'
             });
         } else if (isTrueName) {
             //Kiểm tra Tên có chứa kí tự đặc biệt không ?
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Tên không hợp lệ!'
             });
         } else if (isTrueDescription) {
             //Kiểm tra Mô tả có chứa kí tự đặc biệt không ?
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Mô tả không hợp lệ!'
             });
         } else if (isTrueContent) {
             //Kiểm tra Nội dung có chứa kí tự đặc biệt không ?
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Nội dung không hợp lệ!'
             });
         }
         else if (total < 0 || stock < 0) {
             // Kiểm tra total và stock có phải là số âm ?
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
-                message: 'total và stock không hợp lệ!'
+                message: 'Bạn không được để số âm !'
             });
         }
 
@@ -56,20 +56,19 @@ const createBook = async (req, res) => {
             description,
             content,
             total: totalInt, // Sử dụng giá trị số nguyên đã chuyển đổi
-            stock: stockInt
+            stock: stockInt,
+            category_id
         })
         if (createdBook) {
             console.log('Tạo mới sách thành công ');
-            return res.status(201).json({
+            res.json({
                 status: 'OK',
                 message: 'Tạo mới sách thành công',
                 data: createdBook
             });
         }
-
-
     } catch (e) {
-        return res.status(500).json({
+        return res.json({
             status: 'ERR',
             message: 'Lỗi tạo mới sách!'
         })
@@ -191,9 +190,33 @@ const updateBook = async (req, res) => {
     }
 };
 
+//deleteBook
+const deleteBook = async (req, res) => {
+    try {
+        const bookId = req.params.id
+
+        //Kiem tra bookId co hop le
+        if (!bookId) {
+            return res.status(200).join({
+                status: 'ERR',
+                message: 'Khong ton tai sach'
+            });
+        }
+
+        const response = await BookServices.deleteBook(bookId);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e)
+        return res.status(404).json({
+            message: 'deleteBook Lỗi '
+        })
+    }
+};
+
 module.exports = {
     createBook,
     getAllBook,
     getDetailsBook,
     updateBook,
+    deleteBook,
 }

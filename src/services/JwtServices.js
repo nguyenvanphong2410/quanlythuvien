@@ -7,7 +7,7 @@ const genneralAccessToken = async (payload) => {
     console.log('>> payload: ', payload)
     const access_token = jwt.sign({
         payload
-    }, 'access_token', { expiresIn: '30s' })
+    }, 'access_token', { expiresIn: '24h' })
     return access_token;
 }
 
@@ -27,14 +27,15 @@ const refreshTokenJwtService = async (token) => {
             jwt.verify(token, 'refresh_token', async (err, user) => {
                 if (err) {
                     resolve({
-                        status: 'ERROR',
+                        status: 'ERR',
                         message: 'The authentication'
                     })
                 }
                 const { payload } = user;
                 const access_token = await genneralAccessToken({
                     id: payload?.id,
-                    isAdmin: payload?.isAdmin
+                    name: payload?.name
+                    // isAdmin: payload?.isAdmin
                 })
                 console.log('access_token:', access_token)
                 resolve({

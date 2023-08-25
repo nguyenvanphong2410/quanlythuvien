@@ -61,7 +61,7 @@ const createUser = (newUser) => {
 const getAllBook = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allBooks = await Books.find();
+            const allBooks = await Books.find({deleted: false});
             
             resolve({
                 status: 'OK',
@@ -133,10 +133,40 @@ const updateBook = (id, data) => {
     })
 }
 
+//deleteBook
+const deleteBook = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const checkBook = await Books.findOne({
+                _id: id
+            })
+
+            //Kiem tra sách khong ton tai 
+            if (checkBook === null) {
+                resolve({
+                    status: 'ERR',
+                    message: 'Sach không tồn tại'
+                })
+            }
+
+            await checkBook.delete()
+
+            resolve({
+                status: 'OK',
+                message: 'Xóa sách thành công SUCCESS',
+
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     createUser,
     getAllBook,
     getDetailsBook,
     updateBook,
+    deleteBook
 }

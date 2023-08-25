@@ -1,6 +1,7 @@
 const EmployeeService = require('../services/EmployeeServices')
 const JwtServices = require('../services/JwtServices')
 const Employee = require('../models/EmployeeModel')
+const jwt = require('jsonwebtoken');
 
 const createUser = async (req, res) => {
     try {
@@ -20,31 +21,31 @@ const createUser = async (req, res) => {
         if (!name || !email || !password || !phone) {
             console.log('111');
             //Kiểm tra tồn tại các giá trị
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Một hoặc nhiều trường không tồn tại !'
             });
         } else if (!isCheckEmail) {
             console.log('222');
             //Kiểm tra định dạng email
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Kiểm tra lại định dạng email !'
             });
         } else if (isTrueName) {
             console.log('333');
             //Kiểm tra Tên có chứa kí tự đặc biệt không
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Tên không đúng hoặc chứa kí tự đặc biệt!'
             });
         }
 
-        const response = await EmployeeService.createEmployee(req.body);
-        return res.status(201).json(response);
+        const response = await EmployeeService.createEmployee(req.body, res);
+        return res.json(response);
 
     } catch (e) {
-        return res.status(500).json({
+        return res.json({
             status: 'ERR',
             message: 'Lỗi tạo người dùng !'
         })
@@ -66,19 +67,19 @@ const getAllUser = async (req, res) => {
 
 const loginEmployee = async (req, res) => {
     try {
-        const { name, email, password, phone } = req.body;
+        const { email, password } = req.body;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
         const isCheckEmail = reg.test(email);
 
-        if (!name || !email || !password || !phone) {
-            return res.status(200).json({
+        if (!email || !password) {
+            return res.json({
                 status: 'ERR',
-                message: 'The input is required'
+                message: 'Một hoặc nhiều dữ liệu trống !'
             });
         } else if (!isCheckEmail) {
-            return res.status(200).json({
+            return res.json({
                 status: 'ERR',
-                message: 'The input is email'
+                message: 'Email không hợp lệ !'
             });
         }
         console.log('Kiểm tra định dạng email: ', isCheckEmail);
@@ -87,7 +88,7 @@ const loginEmployee = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         // return res.status(404).json({
-        return res.status(500).json({
+        return res.json({
             status: 'ERR',
             message: 'Đăng nhập thất bại !'
         })
@@ -99,7 +100,7 @@ const updateEmployee = async (req, res) => {
     try {
         //Nhận vào user id qua url
         const userId = req.params.id
-        const { name, email, password, phone } = req.body;
+        const { name, email, phone } = req.body;
         const data = req.body;
         console.log(data);
 
@@ -152,40 +153,41 @@ const updateEmployee = async (req, res) => {
         }
 
         console.log('ID của 1 user: ', userId);
-        const response = await EmployeeService.updateEmployee(userId, data);
+        const response = await EmployeeService.updateEmployee(userId, data, res);
         console.log('222');
 
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'updateEmployee Loi nha, co the la loi id '
+            message: 'updateEmployee Lỗi '
         })
     }
 };
 
-// //Delete User
-// const deleteUser = async (req, res) => {
-//     try {
-//         const userId = req.params.id
-//         const token = req.headers
+//deleteEmployee
+const deleteEmployee = async (req, res) => {
+    try {
+        const employeeId = req.params.id
+        // const token = req.headers
 
-//         //Kiem tra userId co hop le
-//         if (!userId) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The userId is required(userId kh hợp lệ)'
-//             });
-//         }
+        //Kiem tra employeeId co hop le
+        if (!employeeId) {
+            return res.status(200).join({
+                status: 'ERR',
+                message: 'Khong ton tai nhan vien'
+            });
+        }
 
-//         console.log('ID của 1 user: ', userId);
-//         const response = await UserService.deleteUser(userId);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: 'Loi nha, co the la loi id '
-//         })
-//     }
-// };
+        console.log('ID của 1 employee: ', employeeId);
+        const response = await EmployeeService.deleteEmployee(employeeId);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e)
+        return res.status(404).json({
+            message: 'deleteEmployee Lỗi '
+        })
+    }
+};
 
 
 //getDetailsEmployee
@@ -207,6 +209,50 @@ const getDetailsEmployee = async (req, res) => {
     } catch (e) {
         return res.status(404).json({
             message: ' getDetailsEmployee Loi nha, co the la loi id '
+        })
+    }
+};
+
+//getInfoEmployee
+const getInfoEmployee = async (req, res) => {
+    try {
+
+        const { token } = req.body; // Lấy token 
+        console.log("token là: ", token.token);
+
+        // Kiểm tra token có tồn tại hay không
+        if (!token.token) {
+            return res.status(401).json({
+                status: 'ERR',
+                message: 'Access denied. No token provided.'
+            });
+        }
+
+        // Xác thực và lấy thông tin từ token
+        const decoded = jwt.verify(token.token, 'access_token',);
+        console.log("decoded là: ", decoded);
+
+
+        // Lấy id người dùng từ payload của token
+        const userId = decoded.payload.id;
+        console.log('ID của 1 user: ', userId);
+
+        // const userId = req.params.id
+
+        //Kiem tra userId co hop le
+        if (!userId) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The userId is required(userId kh hợp lệ !!!)'
+            });
+        }
+
+        const response = await EmployeeService.getDetailsEmployee(userId);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e)
+        return res.status(404).json({
+            message: ' get-info Loi nha, '
         })
     }
 };
@@ -241,6 +287,6 @@ module.exports = {
     getAllUser,
     updateEmployee,
     getDetailsEmployee,
-    // deleteUser,
-    // refreshToken
+    getInfoEmployee,
+    deleteEmployee
 }
