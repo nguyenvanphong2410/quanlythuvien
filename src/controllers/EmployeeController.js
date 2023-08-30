@@ -84,13 +84,28 @@ const loginEmployee = async (req, res) => {
         }
         console.log('Kiểm tra định dạng email: ', isCheckEmail);
 
-        const response = await EmployeeService.loginEmployee(req.body);
+        const response = await EmployeeService.loginEmployee(req.body, res);
         return res.status(200).json(response);
     } catch (e) {
         // return res.status(404).json({
         return res.json({
             status: 'ERR',
             message: 'Đăng nhập thất bại !'
+        })
+    }
+};
+
+//logoutEmployee
+const logoutEmployee = async (req, res) => {
+    try {
+        res.clearCookie('access_token')
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Đăng xuất thành công'
+        })
+    } catch (e) {
+        return res.status(404).json({
+            message: ' logoutEmployee Lỗi ! '
         })
     }
 };
@@ -257,29 +272,29 @@ const getInfoEmployee = async (req, res) => {
     }
 };
 
-// //refreshToken
-// const refreshToken = async (req, res) => {
-//     try {
-//         const token = req.headers.token.split(' ')[1];
-//         const userId = req.params.id
+//refreshToken
+const refreshToken = async (req, res) => {
+    try {
+        const token = req.headers.token.split(' ')[1];
+        const userId = req.params.id
 
-//         //Kiem tra userId co hop le
-//         if (!token) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The token is required(token kh hợp lệ)'
-//             });
-//         }
+        //Kiem tra userId co hop le
+        if (!token) {
+            return res.status(200).join({
+                status: 'ERR',
+                message: 'The token is required(token kh hợp lệ)'
+            });
+        }
 
-//         console.log('ID của 1 user: ', userId);
-//         const response = await JwtServices.refreshTokenJwtService(token);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: ' getDetailsUser Loi nha, co the la loi id '
-//         })
-//     }
-// };
+        console.log('ID của 1 user: ', userId);
+        const response = await JwtServices.refreshTokenJwtService(token);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(404).json({
+            message: ' getDetailsUser Loi nha, co the la loi id '
+        })
+    }
+};
 
 module.exports = {
     createUser,
@@ -288,5 +303,7 @@ module.exports = {
     updateEmployee,
     getDetailsEmployee,
     getInfoEmployee,
-    deleteEmployee
+    deleteEmployee,
+    logoutEmployee,
+    refreshToken
 }

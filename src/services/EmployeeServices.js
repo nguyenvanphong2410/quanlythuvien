@@ -2,10 +2,11 @@ const Employee = require('../models/EmployeeModel')
 const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('./JwtServices');
 const dotenv = require('dotenv');
-const mongooseDelete = require('mongoose-delete')
+const mongooseDelete = require('mongoose-delete');
+const moment = require("moment");
 
 
-const createEmployee = (newEmployee,res) => {
+const createEmployee = (newEmployee, res) => {
     return new Promise(async (resolve, reject) => {
         const { name, email, password, phone } = newEmployee;
         console.log('newEmployee:', newEmployee);
@@ -27,7 +28,7 @@ const createEmployee = (newEmployee,res) => {
                     status: 'ERR',
                     message: 'Phone này đã tồn tại'
                 })
-                
+
             }
 
             //Mã hóa pass
@@ -59,7 +60,7 @@ const createEmployee = (newEmployee,res) => {
 const getAllUser = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allUser = await Employee.find({deleted: false});
+            const allUser = await Employee.find({ deleted_at: null });
 
             resolve({
                 status: 'OK',
@@ -72,7 +73,7 @@ const getAllUser = () => {
         }
     })
 }
-const loginEmployee = (employeeLogin) => {
+const loginEmployee = (employeeLogin, res) => {
     return new Promise(async (resolve, reject) => {
         const { email, password } = employeeLogin;
         try {
@@ -81,10 +82,17 @@ const loginEmployee = (employeeLogin) => {
 
             //Login : Kiem tra email khong ton tai 
             if (checkUser === null) {
-                return res.json({
+                return reject({
                     status: 'Ok',
                     message: 'The email is not defined(Email này không tồn tại trong db)'
                 })
+            }
+            // Kiểm tra trạng thái của người dùng
+            if (checkUser.status === '1') {
+                return res.json({
+                    status: 'ERR',
+                    message: 'Tài khoản bị khóa !'
+                });
             }
 
             //so sanh password dưa vào
@@ -93,11 +101,12 @@ const loginEmployee = (employeeLogin) => {
 
             //Kiểm tra password sai
             if (!comparePassword) {
-                return res.json({
+                return reject({
                     status: 'Ok',
                     message: 'The password or user is incorrect(Mk hoặc ngdg không chính xác)'
                 })
             }
+
 
             //Sau khi logi thanh cong lấy token
             const access_token = await genneralAccessToken({
@@ -164,7 +173,7 @@ const updateEmployee = (id, data, res) => {
 
             resolve({
                 status: 'OK',
-                message: 'Cập nhật thông tin user thành công SUCCESS',
+                message: 'Cập nhật thông tin user thành công',
                 data: updatedUser
             })
 
@@ -192,8 +201,10 @@ const deleteEmployee = (id) => {
                 })
             }
 
-            await checkEmployee.delete()
-
+            // await checkEmployee.delete()
+            checkEmployee.deleted_at = moment();
+            await checkEmployee.save()
+            
             resolve({
                 status: 'OK',
                 message: 'Xóa nhân viên thành công SUCCESS',
@@ -220,13 +231,13 @@ const getDetailsEmployee = (id) => {
             if (user === null) {
                 return reject.status(500).json({
                     status: 'Ok',
-                    message: 'The user is not defined(User này không tồn tại trong db)'
+                    message: 'Nhân viên này không tồn tại !'
                 })
             }
 
             resolve({
                 status: 'OK',
-                message: 'Lấy ra thông thi của 1 nhân viên thành công SUCCESS',
+                message: 'Lấy 1 nhân viên thành công SUCCESS',
                 data: user
             })
 

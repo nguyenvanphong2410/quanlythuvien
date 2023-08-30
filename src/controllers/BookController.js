@@ -1,10 +1,12 @@
 const BookServices = require('../services/BookServices')
-const Book = require('../models/BookModel')
+const Book = require('../models/BookModel');
+const Books = require('../models/BookModel');
+const Authors = require('../models/AuthorModel');
 
 const createBook = async (req, res) => {
     try {
 
-        const { name, year_creation, description, content, total, stock , category_id} = req.body;
+        const { name, year_creation, description, content, total, stock, category_id, author_ids } = req.body;
         console.log(req.body);
 
         // Chuyển đổi total và stock sang số nguyên
@@ -13,11 +15,12 @@ const createBook = async (req, res) => {
 
         //Kí tự đặc biệt
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;;
+        const specialCharsContent = /[$%^&*_\[\]{}|]+/;
         const isTrueName = specialChars.test(name)
         const isTrueDescription = specialChars.test(description)
-        const isTrueContent = specialChars.test(content)
+        const isTrueContent = specialCharsContent.test(content)
 
-        if (!name || !year_creation || !description || !content || !total || !stock || !category_id) {
+        if (!name || !year_creation || !description || !content || !total || !stock || !category_id || !author_ids) {
             //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
@@ -55,10 +58,28 @@ const createBook = async (req, res) => {
             year_creation,
             description,
             content,
-            total: totalInt, // Sử dụng giá trị số nguyên đã chuyển đổi
+            total: totalInt,
             stock: stockInt,
-            category_id
+            category_id,
+            author_ids
         })
+
+        // Tìm tác giả thuộc author_ids
+        const authorIds = createdBook.author_ids;
+        // console.log("author_ids", createdBook.author_ids);
+
+        authorIds.map(async (item) => {
+            console.log('Id tac gia: ', item);
+            //Lấy ra 1 email theo id
+            const authorOfBook = await Authors.findOne({ _id: item })
+            console.log('-- authorOfBook', authorOfBook);
+            if (authorOfBook) {
+                await authorOfBook.book_ids.push(createdBook._id);
+                await authorOfBook.save();
+                console.log('da them vao AuthorModel')
+            }
+        })
+
         if (createdBook) {
             console.log('Tạo mới sách thành công ');
             res.json({
@@ -163,14 +184,14 @@ const updateBook = async (req, res) => {
                 status: 'ERR',
                 message: 'Nội dung không hợp lệ!'
             });
-        } else if (isTrueTotal || total < 0  ) {
+        } else if (isTrueTotal || total < 0) {
             console.log('444');
             //Kiểm tra total 
             return res.json({
                 status: 'ERR',
                 message: 'Tổng số lượng không hợp lệ !'
             });
-        } else if(isTrueStock || stock < 0 ) {
+        } else if (isTrueStock || stock < 0) {
             console.log('444');
             //Kiểm tra stock 
             return res.json({

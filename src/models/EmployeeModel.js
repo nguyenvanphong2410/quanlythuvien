@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const mongooseDelete = require('mongoose-delete')
 
 const Employee = new mongoose.Schema(
     {
@@ -7,7 +6,8 @@ const Employee = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         phone: { type: String, required: true },
-        // status: { type: String, required: true }
+        status: { type: String, required: true, default: '0' },
+        deleted_at: {type: Date, default: null}
         // access_token: { type: String, require: true },
         // refresh_token: { type: String, require: true },
     },
@@ -16,8 +16,7 @@ const Employee = new mongoose.Schema(
     }
 );
 
-// add plugin
-Employee.plugin(mongooseDelete);
+
 
 const Employees = mongoose.model("Employee", Employee);
 module.exports = Employees;

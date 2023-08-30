@@ -9,25 +9,22 @@ const createAuthor = async (req, res) => {
 
         //Kí tự đặc biệt
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
+        const specialCharsStory = /[$%^&*_\[\]{}\\|]+/;
         const isTrueName = specialChars.test(name)
-        const isTrueStory = specialChars.test(story)
+        const isTrueStory = specialCharsStory.test(story)
         console.log(isTrueName);
 
         if (!name || !date_of_birth || !story ) {
-            
-            //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
                 message: 'Một hoặc nhiều trường không tồn tại !'
             });
         } else if (isTrueName) {
-            //Kiểm tra Tên có chứa kí tự đặc biệt không
             return res.json({
                 status: 'ERR',
                 message: 'Tên không hợp lệ!'
             });
         }else if (isTrueStory) {
-            //Kiểm tra Story có chứa kí tự đặc biệt không
             return res.json({
                 status: 'ERR',
                 message: 'Tiểu sử không hợp lệ!'
@@ -37,7 +34,8 @@ const createAuthor = async (req, res) => {
         const createdAuthor = await Author.create({
             name,
             date_of_birth,
-            story
+            story,
+            
         })
 
         if (createdAuthor) {

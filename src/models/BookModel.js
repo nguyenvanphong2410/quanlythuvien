@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const mongooseDelete = require('mongoose-delete');
 
 const Book = new mongoose.Schema(
     {
@@ -9,18 +8,21 @@ const Book = new mongoose.Schema(
         content: { type: String, required: true },
         total: { type: Number, required: true },
         stock: { type: Number, required: true },
-        categories_id: {
+        deleted_at: {type: Date, default: null},
+        category_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Categories'
-        }
+        },
+        author_ids: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Author'
+        }]
     },
     {
         timestamps: true
     }
 );
 
-// add plugin
-Book.plugin(mongooseDelete);
 
 const Books = mongoose.model("Book", Book);
 module.exports = Books;
