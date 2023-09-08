@@ -24,7 +24,7 @@ const createBook = async (req, res) => {
             //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin!'
             });
         } else if (isTrueName) {
             //Kiểm tra Tên có chứa kí tự đặc biệt không ?
@@ -49,7 +49,7 @@ const createBook = async (req, res) => {
             // Kiểm tra total và stock có phải là số âm ?
             return res.json({
                 status: 'ERR',
-                message: 'Bạn không được để số âm !'
+                message: 'Số không hợp lệ!'
             });
         }
 
@@ -72,11 +72,9 @@ const createBook = async (req, res) => {
             console.log('Id tac gia: ', item);
             //Lấy ra 1 email theo id
             const authorOfBook = await Authors.findOne({ _id: item })
-            console.log('-- authorOfBook', authorOfBook);
             if (authorOfBook) {
                 await authorOfBook.book_ids.push(createdBook._id);
                 await authorOfBook.save();
-                console.log('da them vao AuthorModel')
             }
         })
 
@@ -103,7 +101,7 @@ const getAllBook = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'getAllBook: Lỗi'
+            message: 'Lỗi lấy ra sách'
         })
     }
 };
@@ -117,7 +115,7 @@ const getDetailsBook = async (req, res) => {
         if (!bookId) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The bookId is required(bookId kh hợp lệ)'
+                message: 'Sách không tồn tại!'
             });
         }
 
@@ -126,7 +124,7 @@ const getDetailsBook = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: ' getDetailsBook Loi nha '
+            message: 'Lỗi lấy ra 1 sách! '
         })
     }
 };
@@ -142,58 +140,51 @@ const updateBook = async (req, res) => {
 
         //Kí tự đặc biệt
         const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        const specialCharsContent = /[$%^&*_\[\]{}|]+/;
         const isTrueName = specialChars.test(name)
         const isTrueTotal = specialChars.test(total)
         const isTrueStock = specialChars.test(stock)
         const isTrueDescription = specialChars.test(description)
-        const isTrueContent = specialChars.test(content)
+        const isTrueContent = specialCharsContent.test(content)
 
         //Kiem tra bookId co hop le
         if (!bookId) {
             console.log('000')
             return res.json({
                 status: 'ERR',
-                message: 'bookId không hợp lệ !'
+                message: 'Sách này không tồn tại!'
             });
         }
 
         //Kiểm tra 
         if (!name || !year_creation || !description || !content || !total || !stock) {
             console.log('111');
-            //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin!'
             });
         } else if (isTrueName) {
             console.log('333');
-            //Kiểm tra Tên sách 
             return res.json({
                 status: 'ERR',
                 message: 'Tên sách không hợp lệ !'
             });
         } else if (isTrueDescription) {
-            //Kiểm tra Mô tả 
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Mô tả không hợp lệ!'
             });
         } else if (isTrueContent) {
-            //Kiểm tra Nội dung 
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Nội dung không hợp lệ!'
             });
         } else if (isTrueTotal || total < 0) {
-            console.log('444');
-            //Kiểm tra total 
             return res.json({
                 status: 'ERR',
                 message: 'Tổng số lượng không hợp lệ !'
             });
         } else if (isTrueStock || stock < 0) {
-            console.log('444');
-            //Kiểm tra stock 
             return res.json({
                 status: 'ERR',
                 message: 'Số lượng tồn không hợp lệ !'
@@ -206,7 +197,7 @@ const updateBook = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'updatedBook Lỗi '
+            message: 'Lỗi cập nhật thông tin sách'
         })
     }
 };
@@ -220,7 +211,7 @@ const deleteBook = async (req, res) => {
         if (!bookId) {
             return res.status(200).join({
                 status: 'ERR',
-                message: 'Khong ton tai sach'
+                message: 'Không tồn tại sách'
             });
         }
 
@@ -229,7 +220,7 @@ const deleteBook = async (req, res) => {
     } catch (e) {
         console.log(e)
         return res.status(404).json({
-            message: 'deleteBook Lỗi '
+            message: 'Lỗi xóa sách'
         })
     }
 };

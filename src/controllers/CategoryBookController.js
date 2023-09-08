@@ -15,12 +15,12 @@ const createCategoriesBook = async (req, res) => {
         if (!name || !description) {
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin!'
             });
         } else if (isTrueName) {
             return res.json({
                 status: 'ERR',
-                message: 'Tên không hợp lệ!'
+                message: 'Tên thể loại không hợp lệ!'
             });
         } else if (isTrueDescription) {
             return res.json({
@@ -34,10 +34,9 @@ const createCategoriesBook = async (req, res) => {
             description,
         })
         if (createdCategory) {
-            console.log('Tạo mới danh mục thành công');
             return res.status(201).json({
                 status: 'OK',
-                message: 'Tạo mới danh mục thành công',
+                message: 'Tạo mới thể loại sách thành công',
                 data: createdCategory
             });
         }
@@ -45,7 +44,7 @@ const createCategoriesBook = async (req, res) => {
     } catch (e) {
         return res.status(500).json({
             status: 'ERR',
-            message: 'Lỗi tạo mới sách!'
+            message: 'Lỗi tạo mới thể loại sách!'
         })
     }
 };
@@ -57,7 +56,7 @@ const getAllCategoriesBook = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'getAllCategoriesBook: Lỗi'
+            message: 'Lỗi lấy ra thể loại sách'
         })
     }
 };
@@ -70,7 +69,7 @@ const getDetailsCategory = async (req, res) => {
         if (!categoryId) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'Không tồn tại categoryId'
+                message: 'Thể loại này không tồn tại'
             });
         }
 
@@ -78,25 +77,10 @@ const getDetailsCategory = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: ' getDetailsCategory Lỗi ! '
+            message: 'Lỗi lấy 1 thể loại! '
         })
     }
 };
-
-//updateCategory
-//getAllUser User
-const getAllAuthor = async (req, res) => {
-    try {
-
-        const response = await AuthorService.getAllAuthor();
-        return res.status(200).json(response);
-    } catch (e) {
-        return res.status(404).json({
-            message: 'getAllAuthor: Lỗi'
-        })
-    }
-};
-
 
 //updateCategory
 const updateCategory = async (req, res) => {
@@ -114,7 +98,7 @@ const updateCategory = async (req, res) => {
         if (!categoryId) {
             return res.json({
                 status: 'ERR',
-                message: 'Tác giả id không hợp lệ !'
+                message: 'Tác thể loại không hợp lệ !'
             });
         }
 
@@ -122,12 +106,12 @@ const updateCategory = async (req, res) => {
         if (!name || !description) {
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin !'
             });
         } else if (isTrueName) {
             return res.json({
                 status: 'ERR',
-                message: 'Tên tác giả không hợp lệ !'
+                message: 'Tên thể loại không hợp lệ !'
             });
         } else if (isTrueDescription) {
             return res.status(500).json({
@@ -141,7 +125,7 @@ const updateCategory = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'updateCategory Lỗi '
+            message: 'Lỗi cập nhật thông tin '
         })
     }
 };
@@ -155,7 +139,7 @@ const deleteCategory = async (req, res) => {
         if (!categoryId) {
             return res.status(200).join({
                 status: 'ERR',
-                message: 'Khong ton tai Danh muc'
+                message: 'Không tồn tại thể loại sách'
             });
         }
 
@@ -164,7 +148,7 @@ const deleteCategory = async (req, res) => {
     } catch (e) {
         console.log(e)
         return res.status(404).json({
-            message: 'deleteCategory Lỗi '
+            message: 'Lỗi Xóa thể loại sách'
         })
     }
 };

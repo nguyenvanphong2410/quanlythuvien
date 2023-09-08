@@ -23,7 +23,7 @@ const createUser = async (req, res) => {
             //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin!'
             });
         } else if (!isCheckEmail) {
             console.log('222');
@@ -37,7 +37,7 @@ const createUser = async (req, res) => {
             //Kiểm tra Tên có chứa kí tự đặc biệt không
             return res.json({
                 status: 'ERR',
-                message: 'Tên không đúng hoặc chứa kí tự đặc biệt!'
+                message: 'Tên không hợp lệ!'
             });
         }
 
@@ -47,7 +47,7 @@ const createUser = async (req, res) => {
     } catch (e) {
         return res.json({
             status: 'ERR',
-            message: 'Lỗi tạo người dùng !'
+            message: 'Lỗi tạo nhân viên !'
         })
     }
 };
@@ -65,50 +65,50 @@ const getAllUser = async (req, res) => {
     }
 };
 
-const loginEmployee = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-        const isCheckEmail = reg.test(email);
+// const loginEmployee = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+//         const isCheckEmail = reg.test(email);
 
-        if (!email || !password) {
-            return res.json({
-                status: 'ERR',
-                message: 'Một hoặc nhiều dữ liệu trống !'
-            });
-        } else if (!isCheckEmail) {
-            return res.json({
-                status: 'ERR',
-                message: 'Email không hợp lệ !'
-            });
-        }
-        console.log('Kiểm tra định dạng email: ', isCheckEmail);
+//         if (!email || !password) {
+//             return res.json({
+//                 status: 'ERR',
+//                 message: 'Một hoặc nhiều dữ liệu trống !'
+//             });
+//         } else if (!isCheckEmail) {
+//             return res.json({
+//                 status: 'ERR',
+//                 message: 'Email không hợp lệ !'
+//             });
+//         }
+//         console.log('Kiểm tra định dạng email: ', isCheckEmail);
 
-        const response = await EmployeeService.loginEmployee(req.body, res);
-        return res.status(200).json(response);
-    } catch (e) {
-        // return res.status(404).json({
-        return res.json({
-            status: 'ERR',
-            message: 'Đăng nhập thất bại !'
-        })
-    }
-};
+//         const response = await EmployeeService.loginEmployee(req.body, res);
+//         return res.status(200).json(response);
+//     } catch (e) {
+//         // return res.status(404).json({
+//         return res.json({
+//             status: 'ERR',
+//             message: 'Đăng nhập thất bại !'
+//         })
+//     }
+// };
 
-//logoutEmployee
-const logoutEmployee = async (req, res) => {
-    try {
-        res.clearCookie('access_token')
-        return res.status(200).json({
-            status: 'OK',
-            message: 'Đăng xuất thành công'
-        })
-    } catch (e) {
-        return res.status(404).json({
-            message: ' logoutEmployee Lỗi ! '
-        })
-    }
-};
+// //logoutEmployee
+// const logoutEmployee = async (req, res) => {
+//     try {
+//         res.clearCookie('access_token')
+//         return res.status(200).json({
+//             status: 'OK',
+//             message: 'Đăng xuất thành công'
+//         })
+//     } catch (e) {
+//         return res.status(404).json({
+//             message: ' logoutEmployee Lỗi ! '
+//         })
+//     }
+// };
 
 //Update User
 const updateEmployee = async (req, res) => {
@@ -133,7 +133,7 @@ const updateEmployee = async (req, res) => {
             console.log('111')
             return res.json({
                 status: 'ERR',
-                message: 'The userId is required(userId kh hợp lệ)'
+                message: 'Không tìm thấy nhân viên'
             });
         }
         //Kiểm tra 
@@ -142,7 +142,7 @@ const updateEmployee = async (req, res) => {
             //Kiểm tra tồn tại các giá trị
             return res.json({
                 status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
+                message: 'Vui lòng điền đầy đủ thông tin!'
             });
         } else if (!isCheckEmail) {
             console.log('222');
@@ -156,14 +156,14 @@ const updateEmployee = async (req, res) => {
             //Kiểm tra Tên có chứa kí tự đặc biệt không
             return res.json({
                 status: 'ERR',
-                message: 'Tên không đúng hoặc chứa kí tự đặc biệt!'
+                message: 'Tên không hợp lệ!'
             });
         } else if (isTruePhone) {
             console.log('444');
             //Kiểm tra Phone có chứa kí tự đặc biệt không
             return res.json({
                 status: 'ERR',
-                message: 'Phone không đúng hoặc chứa kí tự đặc biệt!'
+                message: 'Phone không hợp lệ!'
             });
         }
 
@@ -174,7 +174,7 @@ const updateEmployee = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
-            message: 'updateEmployee Lỗi '
+            message: 'Cập nhật nhân viên lỗi'
         })
     }
 };
@@ -231,15 +231,15 @@ const getDetailsEmployee = async (req, res) => {
 //getInfoEmployee
 const getInfoEmployee = async (req, res) => {
     try {
-
-        const { token } = req.body; // Lấy token 
+        const token = req.cookies.token
+        // const { token } = req.body; // Lấy token 
         console.log("token là: ", token.token);
 
         // Kiểm tra token có tồn tại hay không
         if (!token.token) {
             return res.status(401).json({
                 status: 'ERR',
-                message: 'Access denied. No token provided.'
+                message: 'Access denied. No token provided !'
             });
         }
 
@@ -272,38 +272,38 @@ const getInfoEmployee = async (req, res) => {
     }
 };
 
-//refreshToken
-const refreshToken = async (req, res) => {
-    try {
-        const token = req.headers.token.split(' ')[1];
-        const userId = req.params.id
+// //refreshToken
+// const refreshToken = async (req, res) => {
+//     try {
+//         const token = req.headers.token.split(' ')[1];
+//         const userId = req.params.id
 
-        //Kiem tra userId co hop le
-        if (!token) {
-            return res.status(200).join({
-                status: 'ERR',
-                message: 'The token is required(token kh hợp lệ)'
-            });
-        }
+//         //Kiem tra userId co hop le
+//         if (!token) {
+//             return res.status(200).join({
+//                 status: 'ERR',
+//                 message: 'The token is required(token kh hợp lệ)'
+//             });
+//         }
 
-        console.log('ID của 1 user: ', userId);
-        const response = await JwtServices.refreshTokenJwtService(token);
-        return res.status(200).json(response);
-    } catch (e) {
-        return res.status(404).json({
-            message: ' getDetailsUser Loi nha, co the la loi id '
-        })
-    }
-};
+//         console.log('ID của 1 user: ', userId);
+//         const response = await JwtServices.refreshTokenJwtService(token);
+//         return res.status(200).json(response);
+//     } catch (e) {
+//         return res.status(404).json({
+//             message: ' getDetailsUser Loi nha, co the la loi id '
+//         })
+//     }
+// };
 
 module.exports = {
     createUser,
-    loginEmployee,
+    // loginEmployee,
+    // logoutEmployee,
     getAllUser,
     updateEmployee,
     getDetailsEmployee,
     getInfoEmployee,
     deleteEmployee,
-    logoutEmployee,
-    refreshToken
+    // refreshToken
 }

@@ -93,7 +93,7 @@ const getDetailsAuthor = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Lấy ra thông tin của 1 tác giả thành công SUCCESS',
+                message: 'Lấy ra thông tin của 1 tác giả thành công ',
                 data: author
             })
 
@@ -122,7 +122,7 @@ const updateAuthor = (id, data) => {
 
             resolve({
                 status: 'OK',
-                message: 'Cập nhật thông tin tác gia thành công SUCCESS',
+                message: 'Cập nhật thông tin thành công',
                 data: updatedAuthor
             })
 
@@ -155,7 +155,7 @@ const deleteAuthor = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Xóa tác giả thành công SUCCESS',
+                message: 'Xóa tác giả thành công',
 
             })
 

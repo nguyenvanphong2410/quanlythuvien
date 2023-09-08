@@ -3,61 +3,6 @@ const Books = require('../models/BookModel');
 const Categories = require("../models/CategoryModel");
 const moment = require("moment");
 
-// const createUser = (newUser) => {
-//     return new Promise(async (resolve, reject) => {
-//         const { name, email, password, confirmPassword, phone } = newUser;
-//         try {
-
-//             // //Lấy ra 1 email 1phone
-//             // const checkUser = await User.findOne({ email: email })
-//             // const checkPhone = await User.findOne({ phone: phone })
-
-//             // //Kiem tra email da ton tai trong db
-//             // if (checkUser !== null) {
-//                 //     resolve({
-//                     //         status: 'Ok',
-//             //         message: 'The email is already(Email này đã tồn tại)'
-//             //     })
-//             // }
-
-//             // //Kiem tra Phone da ton tai trong db
-//             // if ((checkPhone !== null)) {
-//                 //     resolve({
-//                     //         status: 'Ok',
-//                     //         message: 'The Phone is already(Phone này đã tồn tại)'
-//                     //     })
-//                     // }
-
-//                     // //Mã hóa pass
-//                     // const hash = bcrypt.hashSync(password, 10);
-//                     // console.log('hash', hash);
-
-//                     // const createdUser = await User.create({
-//                         //     name,
-//                         //     email,
-//                         //     password: hash,
-//                         //     phone
-//                         // })
-
-
-//                         // const createdUser = await User.create({
-//             //     name,
-//             //     email,
-//             //     password,
-//             //     phone
-//             // })
-//             // if (createdUser) {
-//             //     resolve({
-//                 //         status: 'OK',
-//             //         message: 'Tạo ng dùng thành công SUCCESS',
-//             //         data: createdUser
-//             //     })
-//             // }
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
 
 //getAllUser User Service
 const getAllBook = () => {
@@ -113,7 +58,6 @@ const updateBook = (id, data) => {
             const checkUser = await Books.findOne({ _id: id })
 
             if (checkUser === null) {
-                //Kiem tra user khong ton tai 
                 return res.json({
                     status: 'ERR',
                     message: 'Sách này không tồn tại !)'
@@ -125,7 +69,7 @@ const updateBook = (id, data) => {
 
             resolve({
                 status: 'OK',
-                message: 'Cập nhật thông tin user thành công SUCCESS',
+                message: 'Cập nhật thông tin thành công ',
                 data: updatedBook
             })
 
@@ -139,15 +83,13 @@ const updateBook = (id, data) => {
 const deleteBook = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const checkBook = await Books.findOne({
-                _id: id
-            })
+            const checkBook = await Books.findOne({_id: id})
 
             //Kiem tra sách khong ton tai 
             if (checkBook === null) {
                 resolve({
                     status: 'ERR',
-                    message: 'Sach không tồn tại'
+                    message: 'Sách không tồn tại'
                 })
             }
 
@@ -157,10 +99,8 @@ const deleteBook = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Xóa sách thành công SUCCESS',
-
+                message: 'Xóa sách thành công',
             })
-
         } catch (e) {
             reject(e);
         }

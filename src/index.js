@@ -4,7 +4,7 @@ const db = require('./config/db');
 const routes = require('./routes');
 const bodyParser = require('body-parser');
 // const cors = require('cors');
-
+const cookieParser = require('cookie-parser');
 dotenv.config()
 
 //connect to DB
@@ -12,7 +12,7 @@ db.connect();
 
 const app = express()
 const port = process.env.PORT || 3001
-
+app.use(cookieParser());
 //Cors
 app.use(function (req, res, next) {
     //website you wish to allow to connect

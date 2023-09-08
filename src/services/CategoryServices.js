@@ -113,7 +113,7 @@ const updateCategory = (id, data) => {
             if (checkCategory === null) {
                 return res.json({
                     status: 'ERR',
-                    message: 'Thể loại sách không tồn tại !)'
+                    message: 'Thể loại sách không tồn tại!)'
                 })
             }
             const updatedCategory = await Category.findByIdAndUpdate(id, data, { new: true });
@@ -122,7 +122,7 @@ const updateCategory = (id, data) => {
 
             resolve({
                 status: 'OK',
-                message: 'Cập nhật thể loại sách thành công ',
+                message: 'Cập nhật thông tin thành công ',
                 data: updatedCategory
             })
 
@@ -143,7 +143,7 @@ const deleteCategory = (id) => {
             if (checkCategory === null) {
                 resolve({
                     status: 'ERR',
-                    message: 'Tác giả không tồn tại'
+                    message: 'Thể loại không tồn tại'
                 })
             }
 
@@ -153,7 +153,7 @@ const deleteCategory = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Xóa tác Danh mục thành công',
+                message: 'Xóa tác thể loại thành công',
 
             })
 
@@ -162,8 +162,6 @@ const deleteCategory = (id) => {
         }
     })
 }
-
-
 
 module.exports = {
     createCategoriesBook,

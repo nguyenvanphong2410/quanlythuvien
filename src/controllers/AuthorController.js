@@ -103,8 +103,9 @@ const updateAuthor = async (req, res) => {
 
         //Kí tự đặc biệt
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
+        const specialCharsStory = /[$%^&*_\[\]{}|]+/;
         const isTrueName = specialChars.test(name)
-        const isTrueStory = specialChars.test(story)
+        const isTrueStory = specialCharsStory.test(story)
 
         //Kiem tra bookId co hop le
         if (!authorId) {
@@ -132,7 +133,7 @@ const updateAuthor = async (req, res) => {
             });
         } else if (isTrueStory) {
             //Kiểm tra Tiểu sử 
-            return res.status(500).json({
+            return res.json({
                 status: 'ERR',
                 message: 'Tiểu sử không hợp lệ!'
             });
@@ -159,7 +160,7 @@ const deleteAuthor = async (req, res) => {
         if (!authorId) {
             return res.status(200).join({
                 status: 'ERR',
-                message: 'Khong ton tai tác giả'
+                message: 'Không tồn tại tác giả !'
             });
         }
 
@@ -168,7 +169,7 @@ const deleteAuthor = async (req, res) => {
     } catch (e) {
         console.log(e)
         return res.status(404).json({
-            message: 'deleteAuthor Lỗi '
+            message: 'Lỗi xóa tác giả'
         })
     }
 };

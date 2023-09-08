@@ -1,9 +1,7 @@
 const Employee = require('../models/EmployeeModel')
 const bcrypt = require("bcrypt");
-const { genneralAccessToken, genneralRefreshToken } = require('./JwtServices');
-const dotenv = require('dotenv');
-const mongooseDelete = require('mongoose-delete');
 const moment = require("moment");
+const { generatePassword } = require('../helpers/index');
 
 
 const createEmployee = (newEmployee, res) => {
@@ -22,23 +20,19 @@ const createEmployee = (newEmployee, res) => {
                     status: 'ERR',
                     message: 'Email này đã tồn tại'
                 })
+
             } else if ((checkPhone)) {
                 //Kiem tra Phone da ton tai trong db
                 return res.json({
                     status: 'ERR',
                     message: 'Phone này đã tồn tại'
                 })
-
             }
-
-            //Mã hóa pass
-            const hash = bcrypt.hashSync(password, 10);
-            console.log('hash', hash);
 
             const createdEmployee = await Employee.create({
                 name,
                 email,
-                password: hash,
+                password: await generatePassword(password),
                 phone
             });
 
@@ -73,70 +67,70 @@ const getAllUser = () => {
         }
     })
 }
-const loginEmployee = (employeeLogin, res) => {
-    return new Promise(async (resolve, reject) => {
-        const { email, password } = employeeLogin;
-        try {
-            //Lấy ra 1 email 1phone
-            const checkUser = await Employee.findOne({ email: email })
+// const loginEmployee = (employeeLogin, res) => {
+//     return new Promise(async (resolve, reject) => {
+//         const { email, password } = employeeLogin;
+//         try {
+//             //Lấy ra 1 email 1phone
+//             const checkUser = await Employee.findOne({ email: email })
 
-            //Login : Kiem tra email khong ton tai 
-            if (checkUser === null) {
-                return reject({
-                    status: 'Ok',
-                    message: 'The email is not defined(Email này không tồn tại trong db)'
-                })
-            }
-            // Kiểm tra trạng thái của người dùng
-            if (checkUser.status === '1') {
-                return res.json({
-                    status: 'ERR',
-                    message: 'Tài khoản bị khóa !'
-                });
-            }
+//             //Login : Kiem tra email khong ton tai 
+//             if (checkUser === null) {
+//                 return reject({
+//                     status: 'OK',
+//                     message: 'Email này không tồn tại!'
+//                 })
+//             }
 
-            //so sanh password dưa vào
-            const comparePassword = bcrypt.compareSync(password, checkUser.password);
-            // console.log('So sánh password: ', comparePassword);
+//             //so sanh password dưa vào
+//             const comparePassword = bcrypt.compareSync(password, checkUser.password);
 
-            //Kiểm tra password sai
-            if (!comparePassword) {
-                return reject({
-                    status: 'Ok',
-                    message: 'The password or user is incorrect(Mk hoặc ngdg không chính xác)'
-                })
-            }
+//             //Kiểm tra password sai
+//             if (!comparePassword) {
+//                 return reject({
+//                     status: 'OK',
+//                     message: 'Mk hoặc ngdg không chính xác)'
+//                 })
+//             }
+
+//             // Kiểm tra trạng thái của người dùng
+//             if (checkUser.status === '1') {
+//                 return res.json({
+//                     status: 'ERR',
+//                     message: 'Tài khoản bị khóa !'
+//                 });
+//             }
 
 
-            //Sau khi logi thanh cong lấy token
-            const access_token = await genneralAccessToken({
-                //truyền payload vào 
-                id: checkUser.id,
-                email: checkUser.email,
-                name: checkUser.name,
-                // isAdmin: checkUser.isAdmin
-            })
+//             //Sau khi logi thanh cong lấy token
+//             const access_token = await genneralAccessToken({
+//                 //truyền payload vào 
+//                 id: checkUser.id,
+//                 email: checkUser.email,
+//                 name: checkUser.name,
 
-            //Trả về refresh token
-            const refresh_token = await genneralRefreshToken({
-                id: checkUser.id,
-                // isAdmin: checkUser.isAdmin
-            })
+//             })
 
-            console.log('>> Trả về access_token', access_token);
+//             //Trả về refresh token
+//             const refresh_token = await genneralRefreshToken({
+//                 id: checkUser.id,
 
-            resolve({
-                status: 'OK',
-                message: 'Đăng nhập thành công SUCCESS',
-                access_token,
-                refresh_token
-            })
+//             })
 
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
+//             console.log('>> Trả về access_token', access_token);
+
+//             resolve({
+//                 status: 'OK',
+//                 message: 'Đăng nhập thành công SUCCESS',
+//                 access_token,
+//                 refresh_token
+//             })
+
+//         } catch (e) {
+//             reject(e);
+//         }
+//     })
+// }
 
 //Update User Service
 const updateEmployee = (id, data, res) => {
@@ -152,19 +146,21 @@ const updateEmployee = (id, data, res) => {
                     status: 'ERR',
                     message: 'Nhân viên này không tồn tại !'
                 })
-            } else if (checkEmail) {
-                //Kiem tra email da ton tai 
-                return res.json({
-                    status: 'ERR',
-                    message: 'Email này đã tồn tại !'
-                })
-            } else if (checkPhone) {
-                //Kiem tra Phone da ton tai 
-                return res.json({
-                    status: 'ERR',
-                    message: 'Phone này đã tồn tại !'
-                })
             }
+            //  else if (checkEmail) {
+            //     //Kiem tra email da ton tai 
+            //     return res.json({
+            //         status: 'ERR',
+            //         message: 'Email này đã tồn tại !'
+            //     })
+            // }
+            //  else if (checkPhone) {
+            //     //Kiem tra Phone da ton tai 
+            //     return res.json({
+            //         status: 'ERR',
+            //         message: 'Phone này đã tồn tại !'
+            //     })
+            // }
 
             // const updatedUser = await Employee.findByIdAndUpdate(id, data);
             const updatedUser = await Employee.findByIdAndUpdate(id, data, { new: true });
@@ -173,7 +169,7 @@ const updateEmployee = (id, data, res) => {
 
             resolve({
                 status: 'OK',
-                message: 'Cập nhật thông tin user thành công',
+                message: 'Cập nhật thông tin thành công',
                 data: updatedUser
             })
 
@@ -204,10 +200,10 @@ const deleteEmployee = (id) => {
             // await checkEmployee.delete()
             checkEmployee.deleted_at = moment();
             await checkEmployee.save()
-            
+
             resolve({
                 status: 'OK',
-                message: 'Xóa nhân viên thành công SUCCESS',
+                message: 'Xóa nhân viên thành công',
 
             })
 
@@ -237,7 +233,7 @@ const getDetailsEmployee = (id) => {
 
             resolve({
                 status: 'OK',
-                message: 'Lấy 1 nhân viên thành công SUCCESS',
+                message: 'Lấy 1 nhân viên thành công',
                 data: user
             })
 
@@ -247,12 +243,9 @@ const getDetailsEmployee = (id) => {
     })
 }
 
-
-
-
 module.exports = {
     createEmployee,
-    loginEmployee,
+    // loginEmployee,
     updateEmployee,
     getDetailsEmployee,
     deleteEmployee,
