@@ -1,15 +1,16 @@
-const responseSuccess = (res,data,status = 200, message = 'Success', error = false,) => {
+const responseSuccess = (res, data, status = 200, message = 'Success', error = false,) => {
     return res.status(status).json({
         status,
         error,
         message,
-        data
+        data,
     })
 }
 
-const responseError = (res, status = 400, message = 'Error', error = true) => {
+const responseError = (res, status = 400,type='' , message = 'Error', error = true) => {
     return res.status(status).json({
         status,
+        type,
         error,
         message,
     })

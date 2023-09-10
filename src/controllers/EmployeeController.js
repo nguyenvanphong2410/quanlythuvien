@@ -2,53 +2,40 @@ const EmployeeService = require('../services/EmployeeServices')
 const JwtServices = require('../services/JwtServices')
 const Employee = require('../models/EmployeeModel')
 const jwt = require('jsonwebtoken');
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 const createUser = async (req, res) => {
     try {
         const { name, email, password, phone } = req.body;
         console.log(req.body);
 
-        //Định dạng email
+        //Chuỗi so sánh
+        const hasNumber = /\d/;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-        const isCheckEmail = reg.test(email);
-
-        //Kí tự đặc biệt
         const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
-        const isTrueName = specialChars.test(name)
-        console.log(isTrueName);
 
-        //Kiểm tra 
+        const isCheckEmail = reg.test(email);
+        const isTrueName = specialChars.test(name)
+        const ishasNumberName = hasNumber.test(name);
+
         if (!name || !email || !password || !phone) {
-            console.log('111');
-            //Kiểm tra tồn tại các giá trị
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin!'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
+
         } else if (!isCheckEmail) {
-            console.log('222');
-            //Kiểm tra định dạng email
-            return res.json({
-                status: 'ERR',
-                message: 'Kiểm tra lại định dạng email !'
-            });
+            return responseError(res, 400, 'email', 'Email này không hợp lệ !!! ')
+
         } else if (isTrueName) {
-            console.log('333');
-            //Kiểm tra Tên có chứa kí tự đặc biệt không
-            return res.json({
-                status: 'ERR',
-                message: 'Tên không hợp lệ!'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
+
+        } else if (ishasNumberName) {
+            return responseError(res, 400, 'name', 'Tên có chứa số !!! ')
         }
 
         const response = await EmployeeService.createEmployee(req.body, res);
         return res.json(response);
 
     } catch (e) {
-        return res.json({
-            status: 'ERR',
-            message: 'Lỗi tạo nhân viên !'
-        })
+        return responseError(res, 500, 'err','Tạo mới nhân viên thất bại !!! ')
     }
 };
 
@@ -59,56 +46,10 @@ const getAllUser = async (req, res) => {
         const response = await EmployeeService.getAllUser();
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'getAllUser: Lỗi'
-        })
+        return responseError(res, 500, 'err', 'Lấy toàn bộ nhân viên thất bại !!! ')
     }
 };
 
-// const loginEmployee = async (req, res) => {
-//     try {
-//         const { email, password } = req.body;
-//         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-//         const isCheckEmail = reg.test(email);
-
-//         if (!email || !password) {
-//             return res.json({
-//                 status: 'ERR',
-//                 message: 'Một hoặc nhiều dữ liệu trống !'
-//             });
-//         } else if (!isCheckEmail) {
-//             return res.json({
-//                 status: 'ERR',
-//                 message: 'Email không hợp lệ !'
-//             });
-//         }
-//         console.log('Kiểm tra định dạng email: ', isCheckEmail);
-
-//         const response = await EmployeeService.loginEmployee(req.body, res);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         // return res.status(404).json({
-//         return res.json({
-//             status: 'ERR',
-//             message: 'Đăng nhập thất bại !'
-//         })
-//     }
-// };
-
-// //logoutEmployee
-// const logoutEmployee = async (req, res) => {
-//     try {
-//         res.clearCookie('access_token')
-//         return res.status(200).json({
-//             status: 'OK',
-//             message: 'Đăng xuất thành công'
-//         })
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: ' logoutEmployee Lỗi ! '
-//         })
-//     }
-// };
 
 //Update User
 const updateEmployee = async (req, res) => {
@@ -119,63 +60,39 @@ const updateEmployee = async (req, res) => {
         const data = req.body;
         console.log(data);
 
-        //Định dạng email
+        //Chuỗi so sánh
+        const hasNumber = /\d/;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-        const isCheckEmail = reg.test(email);
-
-        //Kí tự đặc biệt
         const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+        const isCheckEmail = reg.test(email);
+        const ishasNumberName = hasNumber.test(name);
         const isTrueName = specialChars.test(name)
         const isTruePhone = specialChars.test(phone)
 
-        //Kiem tra userId co hop le
         if (!userId) {
-            console.log('111')
-            return res.json({
-                status: 'ERR',
-                message: 'Không tìm thấy nhân viên'
-            });
+            return responseError(res, 400, 'not found', 'Nhân viên không tồn tại !!! ')
         }
-        //Kiểm tra 
+        
         if (!name || !email || !phone) {
-            console.log('111');
-            //Kiểm tra tồn tại các giá trị
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin!'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (!isCheckEmail) {
-            console.log('222');
-            //Kiểm tra định dạng email
-            return res.json({
-                status: 'ERR',
-                message: 'Kiểm tra lại định dạng email !'
-            });
+            return responseError(res, 400, 'email', 'Email này không hợp lệ !!! ')
         } else if (isTrueName) {
-            console.log('333');
-            //Kiểm tra Tên có chứa kí tự đặc biệt không
-            return res.json({
-                status: 'ERR',
-                message: 'Tên không hợp lệ!'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
+        } else if (ishasNumberName) {
+            return responseError(res, 400, 'name', 'Tên có chứa số !!! ')
         } else if (isTruePhone) {
-            console.log('444');
-            //Kiểm tra Phone có chứa kí tự đặc biệt không
-            return res.json({
-                status: 'ERR',
-                message: 'Phone không hợp lệ!'
-            });
+            return responseError(res, 400, 'phone', 'Tên không hợp lệ !!! ')
         }
 
         console.log('ID của 1 user: ', userId);
         const response = await EmployeeService.updateEmployee(userId, data, res);
-        console.log('222');
 
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'Cập nhật nhân viên lỗi'
-        })
+        return responseError(res, 500, 'err','Cập nhật nhân viên thất bại !!! ')
+
     }
 };
 
@@ -272,38 +189,12 @@ const getInfoEmployee = async (req, res) => {
     }
 };
 
-// //refreshToken
-// const refreshToken = async (req, res) => {
-//     try {
-//         const token = req.headers.token.split(' ')[1];
-//         const userId = req.params.id
-
-//         //Kiem tra userId co hop le
-//         if (!token) {
-//             return res.status(200).join({
-//                 status: 'ERR',
-//                 message: 'The token is required(token kh hợp lệ)'
-//             });
-//         }
-
-//         console.log('ID của 1 user: ', userId);
-//         const response = await JwtServices.refreshTokenJwtService(token);
-//         return res.status(200).json(response);
-//     } catch (e) {
-//         return res.status(404).json({
-//             message: ' getDetailsUser Loi nha, co the la loi id '
-//         })
-//     }
-// };
 
 module.exports = {
     createUser,
-    // loginEmployee,
-    // logoutEmployee,
     getAllUser,
     updateEmployee,
     getDetailsEmployee,
     getInfoEmployee,
     deleteEmployee,
-    // refreshToken
 }

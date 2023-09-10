@@ -1,62 +1,8 @@
 const bcrypt = require("bcrypt");
 const Author = require('../models/AuthorModel');
 const moment = require("moment");
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
-const createUser = (newUser) => {
-    return new Promise(async (resolve, reject) => {
-        const { name, email, password, confirmPassword, phone } = newUser;
-        try {
-
-            // //Lấy ra 1 email 1phone
-            // const checkUser = await User.findOne({ email: email })
-            // const checkPhone = await User.findOne({ phone: phone })
-
-            // //Kiem tra email da ton tai trong db
-            // if (checkUser !== null) {
-            //     resolve({
-            //         status: 'Ok',
-            //         message: 'The email is already(Email này đã tồn tại)'
-            //     })
-            // }
-
-            // //Kiem tra Phone da ton tai trong db
-            // if ((checkPhone !== null)) {
-            //     resolve({
-            //         status: 'Ok',
-            //         message: 'The Phone is already(Phone này đã tồn tại)'
-            //     })
-            // }
-
-            // //Mã hóa pass
-            // const hash = bcrypt.hashSync(password, 10);
-            // console.log('hash', hash);
-
-            // const createdUser = await User.create({
-            //     name,
-            //     email,
-            //     password: hash,
-            //     phone
-            // })
-
-
-            // const createdUser = await User.create({
-            //     name,
-            //     email,
-            //     password,
-            //     phone
-            // })
-            // if (createdUser) {
-            //     resolve({
-            //         status: 'OK',
-            //         message: 'Tạo ng dùng thành công SUCCESS',
-            //         data: createdUser
-            //     })
-            // }
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
 
 //getAllUser 
 const getAllAuthor = () => {
@@ -70,8 +16,9 @@ const getAllAuthor = () => {
                 data: allAuthor
             })
 
+
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Lấy ra toàn bộ tác giả thất bại !!! ')
         }
     })
 }
@@ -85,10 +32,7 @@ const getDetailsAuthor = (id) => {
 
             //Kiem tra tác giả khong ton tai 
             if (author === null) {
-                return reject.status(500).json({
-                    status: 'Ok',
-                    message: 'Tác giả này không tồn tại !'
-                })
+                return responseError(res, 400, 'not found', 'Tác giả này không tồn tại !!! ')
             }
 
             resolve({
@@ -98,55 +42,46 @@ const getDetailsAuthor = (id) => {
             })
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Lấy ra thông tin của 1 tác giả thất bại !!! ')
         }
     })
 }
 
 //updateAuthor
-const updateAuthor = (id, data) => {
+const updateAuthor = (id, data, res) => {
     return new Promise(async (resolve, reject) => {
         try {
             const checkUser = await Author.findOne({ _id: id })
 
             if (checkUser === null) {
-                //Kiem tra tác giả khong ton tai 
-                return res.json({
-                    status: 'ERR',
-                    message: 'Tác giả này không tồn tại !)'
-                })
+                return responseError(res, 400, 'not found', 'Tác giả này không tồn tại !!! ')
             }
             const updatedAuthor = await Author.findByIdAndUpdate(id, data, { new: true });
 
             console.log('Book User', updatedAuthor);
 
-            resolve({
+            return responseSuccess(res, {
                 status: 'OK',
                 message: 'Cập nhật thông tin thành công',
                 data: updatedAuthor
-            })
+            }, 200);
 
         } catch (e) {
-            reject(e);
+            console.log(e)
+            return responseError(res, 500, 'err', 'Cập nhật tác giả thất bại !!! ')
         }
     })
 };
 
 //deleteAuthor
-const deleteAuthor = (id) => {
+const deleteAuthor = (id, res) => {
     return new Promise(async (resolve, reject) => {
         try {
             //Lấy ra 1 email 1phone
             const checkAuthor = await Author.findOne({ _id: id })
 
-            // //Lấy ra những sách có id cảu tác giả
-            // const author_ids = await Books.find({author_ids: })
-            //Kiem tra tác giả khong ton tai 
             if (checkAuthor === null) {
-                resolve({
-                    status: 'ERR',
-                    message: 'Tác giả không tồn tại'
-                })
+                return responseError(res, 400, 'not found', 'Tác giả này không tồn tại !!! ')
             }
 
             // await checkEmployee.delete()
@@ -160,13 +95,12 @@ const deleteAuthor = (id) => {
             })
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Xóa tác giả thất bại !!! ')
         }
     })
 }
 
 module.exports = {
-    createUser,
     getAllAuthor,
     getDetailsAuthor,
     updateAuthor,

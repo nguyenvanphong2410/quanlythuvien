@@ -2,7 +2,8 @@ const Employee = require('../models//EmployeeModel')
 const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('../services/JwtServices');
 const cookieParser = require('cookie-parser');
-const {comparePassword} = require('../helpers/index');
+const { comparePassword } = require('../helpers/index');
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 const loginEmployee = async (req, res) => {
     try {
@@ -12,45 +13,26 @@ const loginEmployee = async (req, res) => {
         const isCheckEmail = reg.test(email);
 
         if (!email || !password) {
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đủ thông tin !'
-            });
+            return responseError(res, 400, 'Không tìm thấy email pasword !!!')
+
         } else if (!isCheckEmail) {
-            return res.json({
-                status: 'ERR',
-                message: 'Email không hợp lệ ! !'
-            });
+            return responseError(res, 400, 'Email này không hợp lệ !!! ')
         }
-        console.log('Kiểm tra định dạng email: ', isCheckEmail);
 
         //Lấy ra 1 email 1phone
         const checkUser = await Employee.findOne({ email: email })
-
-        //Login : Kiem tra email khong ton tai 
         if (checkUser === null) {
-            return res.json({
-                status: 'ERR',
-                message: 'Email này không tồn tại!'
-            })
+            return responseError(res, 400, 'Email này không tồn tại !!! ')
         }
 
         //So sánh mật khẩu
-        let verified = await comparePassword(password, checkUser.password)
-
+        const verified = await comparePassword(password, checkUser.password)
         if (!verified) {
-            return res.json({
-                status: 'ERR',
-                message: 'Mật khẩu sai !'
-            })
+            return responseError(res, 400, 'Mật khẩu sai !!! ')
         }
 
-        // Kiểm tra trạng thái của người dùng
         if (checkUser.status === '1') {
-            return res.json({
-                status: 'ERR',
-                message: 'Tài khoản bị khóa !'
-            });
+            return responseError(res, 400, 'Tài khoản bị khóa !!! ')
         }
 
         //Sau khi login thanh cong lấy token
@@ -59,41 +41,20 @@ const loginEmployee = async (req, res) => {
             id: checkUser.id,
             email: checkUser.email,
             name: checkUser.name,
-
         })
 
         //Trả về refresh token
-        const refresh_token = await genneralRefreshToken({
-            id: checkUser.id,
-
-        })
-
-        console.log('>> Trả về access_token', access_token);
-
-        res.json({
+        const refresh_token = await genneralRefreshToken({ id: checkUser.id })
+        responseSuccess(res, {
             status: 'OK',
-            message: 'Đăng nhập thành công SUCCESS',
+            message: 'Đăng nhập thành công $',
             access_token,
             refresh_token
-        })
-
-        // Lấy giá trị của cookie
-        const access_token1 = req.cookies.access_token
-
-        // Xử lý logic tùy thuộc vào giá trị của cookie
-        if (access_token1) {
-            return console.log('Giá trị của access_token:', access_token1);
-        } else {
-            return console.log('Cookie không tồn tại');
-        }
+        }, 200);
 
 
     } catch (e) {
-        // return res.status(404).json({
-        return res.json({
-            status: 'ERR',
-            message: 'Đăng nhập thất bại !'
-        })
+        return responseError(res, 500, 'Đăng nhập thất bại !!! ')
     }
 
 };
@@ -105,38 +66,26 @@ const refreshToken = async (req, res) => {
 
         //Kiem tra userId co hop le
         if (!token) {
-            return res.status(200).join({
-                status: 'ERR',
-                message: 'Token kh hợp lệ)'
-            });
+            return responseError(res, 400, 'Token không hợp lệ !!! ')
         }
 
-        console.log('ID của 1 user: ', userId);
         const response = await JwtServices.refreshTokenJwtService(token);
-        return res.status(200).json(response);
+        return responseSuccess(res, response , 200);
     } catch (e) {
-        return res.status(404).json({
-            message: ' getDetailsUser Loi nha, co the la loi id '
-        })
+        return responseError(res, 500, 'Lỗi refresh token !!! ')
     }
 };
 
 const logoutEmployee = async (req, res) => {
     try {
         res.clearCookie("access_token");
-        return res.json({
+        return responseSuccess(res, {
             status: 'OK',
             message: 'Đăng xuất thành công !'
-        })
+        } , 200);
+
     } catch (error) {
-        logger.error({
-            message: "Error logout",
-            detail: error
-        });
-        return res.json({
-            status: 'ERR',
-            message: 'Đăng xuất thất bại !'
-        })
+        return responseError(res, 500, 'Đăng xuất thất bại !!! ')
     }
 };
 

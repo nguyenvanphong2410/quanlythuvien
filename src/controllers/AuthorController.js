@@ -1,71 +1,59 @@
 const AuthorService = require('../services/AuthorServices')
 const JwtServices = require('../services/JwtServices')
 const Author = require('../models/AuthorModel')
+const {responseSuccess, responseError} = require('../utils/ResponseHandle');
 
 const createAuthor = async (req, res) => {
     try {
         const { name, date_of_birth, story } = req.body;
         console.log(req.body);
 
-        //Kí tự đặc biệt
+        //Chuỗi so sánh
+        const hasNumber = /\d/;
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
         const specialCharsStory = /[$%^&*_\[\]{}\\|]+/;
+
         const isTrueName = specialChars.test(name)
+        const ishasNumberName = hasNumber.test(name);
         const isTrueStory = specialCharsStory.test(story)
-        console.log(isTrueName);
 
         if (!name || !date_of_birth || !story ) {
-            return res.json({
-                status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (isTrueName) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tên không hợp lệ!'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
+        }else if (ishasNumberName) {
+            return responseError(res, 400, 'name', 'Tên có chứa số !!! ')
         }else if (isTrueStory) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tiểu sử không hợp lệ!'
-            });
+            return responseError(res, 400, 'story', 'Tiểu sử không hợp lệ !!! ')
         }
-
         const createdAuthor = await Author.create({
             name,
             date_of_birth,
             story,
-            
         })
 
         if (createdAuthor) {
             console.log('Tạo mới tác giả thành công');
-            return res.json({
+            return responseSuccess(res, { 
                 status: 'OK',
                 message: 'Tạo mới tác giả thành công',
                 data: createdAuthor
-            });
-
+            }, 200);
         }
 
     } catch (e) {
-        return res.json({
-            status: 'ERR',
-            message: 'Lỗi tạo mới tác giả!'
-        })
+        console.log(e)
+        return responseError(res, 500, 'err','Tạo mới tác giả thất bại !!! ')
     }
 };
 
 //getAllUser User
 const getAllAuthor = async (req, res) => {
     try {
-
         const response = await AuthorService.getAllAuthor();
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'getAllAuthor: Lỗi'
-        })
+        return responseError(res, 500, 'err','Lấy toàn tác giả thất bại !!! ')
     }
 };
 
@@ -73,22 +61,15 @@ const getAllAuthor = async (req, res) => {
 const getDetailsAuthor = async (req, res) => {
     try {
         const authorId = req.params.id
-
-        //Kiem tra userId co hop le
+        //Kiem tra authorId co hop le
         if (!authorId) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The bookId is required(bookId kh hợp lệ)'
-            });
+            return responseError(res, 400, 'not found', 'Tác giả không tồn tại !!! ')
         }
 
-        console.log('ID của 1 book: ', authorId);
         const response = await AuthorService.getDetailsAuthor(authorId);
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: ' getDetailsAuthor Loi nha '
-        })
+        return responseError(res, 500, 'err','Lấy chi tiết tác giả thất bại !!! ')
     }
 };
 
@@ -107,46 +88,29 @@ const updateAuthor = async (req, res) => {
         const isTrueName = specialChars.test(name)
         const isTrueStory = specialCharsStory.test(story)
 
-        //Kiem tra bookId co hop le
+        //Kiem tra authorId co hop le
         if (!authorId) {
-            console.log('000')
-            return res.json({
-                status: 'ERR',
-                message: 'Tác giả id không hợp lệ !'
-            });
+            return responseError(res, 400, 'not found', 'Tác giả không tồn tại !!! ')
         }
 
         //Kiểm tra 
         if (!name || !date_of_birth || !story ) {
-            console.log('111');
-            //Kiểm tra tồn tại các giá trị
-            return res.json({
-                status: 'ERR',
-                message: 'Một hoặc nhiều trường không tồn tại !'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
+
         } else if (isTrueName) {
-            console.log('333');
-            //Kiểm tra Tên tác giả 
-            return res.json({
-                status: 'ERR',
-                message: 'Tên tác giả không hợp lệ !'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
+
         } else if (isTrueStory) {
-            //Kiểm tra Tiểu sử 
-            return res.json({
-                status: 'ERR',
-                message: 'Tiểu sử không hợp lệ!'
-            });
+            return responseError(res, 400, 'story', 'Tiểu sử không hợp lệ !!! ')
+
         } 
 
         console.log('ID của 1 tác giả: ', authorId);
-        const response = await AuthorService.updateAuthor(authorId, data);
+        const response = await AuthorService.updateAuthor(authorId, data, res);
 
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'updateAuthor Lỗi '
-        })
+        return responseError(res, 500, 'err','Cập nhật tác giả thất bại !!! ')
     }
 };
 
@@ -164,7 +128,7 @@ const deleteAuthor = async (req, res) => {
             });
         }
 
-        const response = await AuthorService.deleteAuthor(authorId);
+        const response = await AuthorService.deleteAuthor(authorId, res);
         return res.status(200).json(response);
     } catch (e) {
         console.log(e)

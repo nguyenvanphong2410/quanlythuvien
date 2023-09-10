@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 
-
 // generatePassword
 async function generatePassword(password){
     const salt = await bcrypt.genSalt(10);

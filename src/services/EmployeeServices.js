@@ -2,6 +2,7 @@ const Employee = require('../models/EmployeeModel')
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 const { generatePassword } = require('../helpers/index');
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 
 const createEmployee = (newEmployee, res) => {
@@ -9,24 +10,14 @@ const createEmployee = (newEmployee, res) => {
         const { name, email, password, phone } = newEmployee;
         console.log('newEmployee:', newEmployee);
         try {
-
             //Lấy ra 1 email 1phone
             const checkUser = await Employee.findOne({ email: email })
             const checkPhone = await Employee.findOne({ phone: phone })
 
-            //Kiem tra email da ton tai trong db
-            if (checkUser !== null) {
-                return res.json({
-                    status: 'ERR',
-                    message: 'Email này đã tồn tại'
-                })
-
+            if (checkUser) {
+                return responseError(res, 400, 'email', 'Email này đã tồn tại !!! ')
             } else if ((checkPhone)) {
-                //Kiem tra Phone da ton tai trong db
-                return res.json({
-                    status: 'ERR',
-                    message: 'Phone này đã tồn tại'
-                })
+                return responseError(res, 400, 'phone', 'Số điện thoại này đã tồn tại !!! ')
             }
 
             const createdEmployee = await Employee.create({
@@ -38,14 +29,14 @@ const createEmployee = (newEmployee, res) => {
 
             if (createdEmployee) {
                 console.log('Tạo người dùng thành công ');
-                return res.json({
+                return responseSuccess(res, { 
                     status: 'OK',
                     message: 'Đăng ký thành công',
-                    // data: createdEmployee
-                })
+                }, 200);
+
             }
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err','Tạo mới nhân viên thất bại !!! ')
         }
     })
 }
@@ -58,81 +49,17 @@ const getAllUser = () => {
 
             resolve({
                 status: 'OK',
-                message: 'Lấy ra toàn bộ User SUCCESS',
+                message: 'Lấy ra toàn bộ nhân viên thành công',
                 data: allUser
             })
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err','Lấy ra toàn bộ nhân viên thất bại !!! ')
         }
     })
 }
-// const loginEmployee = (employeeLogin, res) => {
-//     return new Promise(async (resolve, reject) => {
-//         const { email, password } = employeeLogin;
-//         try {
-//             //Lấy ra 1 email 1phone
-//             const checkUser = await Employee.findOne({ email: email })
 
-//             //Login : Kiem tra email khong ton tai 
-//             if (checkUser === null) {
-//                 return reject({
-//                     status: 'OK',
-//                     message: 'Email này không tồn tại!'
-//                 })
-//             }
-
-//             //so sanh password dưa vào
-//             const comparePassword = bcrypt.compareSync(password, checkUser.password);
-
-//             //Kiểm tra password sai
-//             if (!comparePassword) {
-//                 return reject({
-//                     status: 'OK',
-//                     message: 'Mk hoặc ngdg không chính xác)'
-//                 })
-//             }
-
-//             // Kiểm tra trạng thái của người dùng
-//             if (checkUser.status === '1') {
-//                 return res.json({
-//                     status: 'ERR',
-//                     message: 'Tài khoản bị khóa !'
-//                 });
-//             }
-
-
-//             //Sau khi logi thanh cong lấy token
-//             const access_token = await genneralAccessToken({
-//                 //truyền payload vào 
-//                 id: checkUser.id,
-//                 email: checkUser.email,
-//                 name: checkUser.name,
-
-//             })
-
-//             //Trả về refresh token
-//             const refresh_token = await genneralRefreshToken({
-//                 id: checkUser.id,
-
-//             })
-
-//             console.log('>> Trả về access_token', access_token);
-
-//             resolve({
-//                 status: 'OK',
-//                 message: 'Đăng nhập thành công SUCCESS',
-//                 access_token,
-//                 refresh_token
-//             })
-
-//         } catch (e) {
-//             reject(e);
-//         }
-//     })
-// }
-
-//Update User Service
+//updateEmployee 
 const updateEmployee = (id, data, res) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -142,39 +69,27 @@ const updateEmployee = (id, data, res) => {
 
             //Kiem tra employee khong ton tai 
             if (checkEmployee === null) {
-                return res.json({
-                    status: 'ERR',
-                    message: 'Nhân viên này không tồn tại !'
-                })
+                return responseError(res, 400, 'not found', 'Nhân viên này không tồn tại !!! ')
             }
-            //  else if (checkEmail) {
-            //     //Kiem tra email da ton tai 
-            //     return res.json({
-            //         status: 'ERR',
-            //         message: 'Email này đã tồn tại !'
-            //     })
-            // }
-            //  else if (checkPhone) {
-            //     //Kiem tra Phone da ton tai 
-            //     return res.json({
-            //         status: 'ERR',
-            //         message: 'Phone này đã tồn tại !'
-            //     })
-            // }
+            else if (checkEmail) {
+                return responseError(res, 400, 'email', 'Email này đã tồn tại !!! ')
+            }
+            else if (checkPhone) {
+                return responseError(res, 400, 'phone', 'Số điện thoại này đã tồn tại !!! ')
+            }
 
-            // const updatedUser = await Employee.findByIdAndUpdate(id, data);
             const updatedUser = await Employee.findByIdAndUpdate(id, data, { new: true });
 
             console.log('Update User', updatedUser);
 
-            resolve({
+            return responseSuccess(res, { 
                 status: 'OK',
                 message: 'Cập nhật thông tin thành công',
                 data: updatedUser
-            })
+            }, 200);
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err','Cập nhật nhân viên thất bại !!! ')
         }
     })
 }
@@ -238,14 +153,13 @@ const getDetailsEmployee = (id) => {
             })
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Lấy ra thông tin của 1 nhân viên thất bại !!! ')
         }
     })
 }
 
 module.exports = {
     createEmployee,
-    // loginEmployee,
     updateEmployee,
     getDetailsEmployee,
     deleteEmployee,
