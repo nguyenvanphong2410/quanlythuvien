@@ -13,26 +13,26 @@ const loginEmployee = async (req, res) => {
         const isCheckEmail = reg.test(email);
 
         if (!email || !password) {
-            return responseError(res, 400, 'Không tìm thấy email pasword !!!')
+            return responseError(res, 400, 'not found','Không tìm thấy email pasword !!!')
 
         } else if (!isCheckEmail) {
-            return responseError(res, 400, 'Email này không hợp lệ !!! ')
+            return responseError(res, 400, 'email','Email này không hợp lệ !!! ')
         }
 
         //Lấy ra 1 email 1phone
         const checkUser = await Employee.findOne({ email: email })
         if (checkUser === null) {
-            return responseError(res, 400, 'Email này không tồn tại !!! ')
+            return responseError(res, 400, 'email','Email này không tồn tại !!! ')
         }
 
         //So sánh mật khẩu
         const verified = await comparePassword(password, checkUser.password)
         if (!verified) {
-            return responseError(res, 400, 'Mật khẩu sai !!! ')
+            return responseError(res, 400, 'password','Mật khẩu sai !!! ')
         }
 
         if (checkUser.status === '1') {
-            return responseError(res, 400, 'Tài khoản bị khóa !!! ')
+            return responseError(res, 400, 'lock','Tài khoản bị khóa !!! ')
         }
 
         //Sau khi login thanh cong lấy token

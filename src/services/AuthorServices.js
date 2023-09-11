@@ -24,7 +24,7 @@ const getAllAuthor = () => {
 }
 
 //getDetailsAuthor
-const getDetailsAuthor = (id) => {
+const getDetailsAuthor = (id, res) => {
     return new Promise(async (resolve, reject) => {
         try {
             //Lấy ra 1 tác giả theo id

@@ -1,51 +1,42 @@
 const CategoryServices = require('../services/CategoryServices');
 const Category = require('../models/CategoryModel');
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 const createCategoriesBook = async (req, res) => {
     try {
         const { name, description } = req.body;
         console.log(req.body);
 
-        //Kí tự đặc biệt
+        //Chuỗi so sánh
+        const hasNumber = /\d/;
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
         const specialCharsDescription = /[$%^&*_\[\]{}|]+/;
+
         const isTrueName = specialChars.test(name)
+        const ishasNumberName = hasNumber.test(name);
         const isTrueDescription = specialCharsDescription.test(description)
 
         if (!name || !description) {
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin!'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (isTrueName) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tên thể loại không hợp lệ!'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
+        } else if (ishasNumberName) {
+            return responseError(res, 400, 'name', 'Tên có chứa số !!! ')
         } else if (isTrueDescription) {
-            return res.json({
-                status: 'ERR',
-                message: 'Mô tả không hợp lệ!'
-            });
+            return responseError(res, 400, 'description', 'Mô tả không hợp lệ !!! ')
         }
 
-        const createdCategory = await Category.create({
-            name,
-            description,
-        })
+        const createdCategory = await Category.create({ name, description })
         if (createdCategory) {
-            return res.status(201).json({
+            return responseSuccess(res, {
                 status: 'OK',
-                message: 'Tạo mới thể loại sách thành công',
+                message: 'Tạo mới danh mục thành công',
                 data: createdCategory
-            });
+            }, 200);
         }
 
     } catch (e) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: 'Lỗi tạo mới thể loại sách!'
-        })
+        return responseError(res, 500, 'err', 'Tạo mới thể loại sách thất bại !!! ')
     }
 };
 
@@ -55,9 +46,7 @@ const getAllCategoriesBook = async (req, res) => {
         const response = await CategoryServices.getAllCategoriesBook();
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'Lỗi lấy ra thể loại sách'
-        })
+        return responseError(res, 500, 'err', 'Lấy tất cả thể loại sách thất bại !!! ')
     }
 };
 
@@ -67,13 +56,11 @@ const getDetailsCategory = async (req, res) => {
         const categoryId = req.params.id
 
         if (!categoryId) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'Thể loại này không tồn tại'
-            });
+            return responseError(res, 400, 'not found', 'Thể loại sách này không tồn tại !!! ')
+
         }
 
-        const response = await CategoryServices.getDetailsCategory(categoryId);
+        const response = await CategoryServices.getDetailsCategory(categoryId, res);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
@@ -89,38 +76,32 @@ const updateCategory = async (req, res) => {
         const { name, description } = req.body;
         const data = req.body;
 
-        //Kí tự đặc biệt
+        //Chuỗi so sánh
+        const hasNumber = /\d/;
         const specialChars = /[$%^&*_\[\]{}\\|<>\/]+/;
         const specialCharsDescription = /[$%^&*_\[\]{}|]+/;
+
         const isTrueName = specialChars.test(name)
+        const ishasNumberName = hasNumber.test(name);
         const isTrueDescription = specialCharsDescription.test(description)
 
+
         if (!categoryId) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tác thể loại không hợp lệ !'
-            });
+            return responseError(res, 400, 'not found', 'Thể loại sách không tồn tại !!! ')
         }
 
         //Kiểm tra 
         if (!name || !description) {
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin !'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (isTrueName) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tên thể loại không hợp lệ !'
-            });
+            return responseError(res, 400, 'name', 'Tên thể loại không hợp lệ !!! ')
+        } else if (ishasNumberName) {
+            return responseError(res, 400, 'name', 'Tên thể loại có chứa số !!! ')
         } else if (isTrueDescription) {
-            return res.status(500).json({
-                status: 'ERR',
-                message: 'Mô tả không hợp lệ!'
-            });
+            return responseError(res, 400, 'description', 'Mô tả không hợp lệ !!! ')
         }
 
-        const response = await CategoryServices.updateCategory(categoryId, data);
+        const response = await CategoryServices.updateCategory(categoryId, data, res);
 
         return res.status(200).json(response);
     } catch (e) {
@@ -143,7 +124,7 @@ const deleteCategory = async (req, res) => {
             });
         }
 
-        const response = await CategoryServices.deleteCategory(categoryId);
+        const response = await CategoryServices.deleteCategory(categoryId, res);
         return res.status(200).json(response);
     } catch (e) {
         console.log(e)

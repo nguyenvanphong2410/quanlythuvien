@@ -123,7 +123,7 @@ const deleteEmployee = (id) => {
             })
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err','Xóa nhân viên thất bại !!! ')
         }
     })
 }

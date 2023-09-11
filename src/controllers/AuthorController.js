@@ -66,7 +66,7 @@ const getDetailsAuthor = async (req, res) => {
             return responseError(res, 400, 'not found', 'Tác giả không tồn tại !!! ')
         }
 
-        const response = await AuthorService.getDetailsAuthor(authorId);
+        const response = await AuthorService.getDetailsAuthor(authorId, res);
         return res.status(200).json(response);
     } catch (e) {
         return responseError(res, 500, 'err','Lấy chi tiết tác giả thất bại !!! ')

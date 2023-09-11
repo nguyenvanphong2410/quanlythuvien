@@ -2,6 +2,7 @@ const BookServices = require('../services/BookServices')
 const Book = require('../models/BookModel');
 const Books = require('../models/BookModel');
 const Authors = require('../models/AuthorModel');
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 const createBook = async (req, res) => {
     try {
@@ -21,36 +22,18 @@ const createBook = async (req, res) => {
         const isTrueContent = specialCharsContent.test(content)
 
         if (!name || !year_creation || !description || !content || !total || !stock || !category_id || !author_ids) {
-            //Kiểm tra tồn tại các giá trị
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin!'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (isTrueName) {
-            //Kiểm tra Tên có chứa kí tự đặc biệt không ?
-            return res.json({
-                status: 'ERR',
-                message: 'Tên không hợp lệ!'
-            });
+            return responseError(res, 400, 'name', 'Tên không hợp lệ !!! ')
         } else if (isTrueDescription) {
-            //Kiểm tra Mô tả có chứa kí tự đặc biệt không ?
-            return res.json({
-                status: 'ERR',
-                message: 'Mô tả không hợp lệ!'
-            });
+            return responseError(res, 400, 'description', 'Mô tả không hợp lệ !!! ')
         } else if (isTrueContent) {
-            //Kiểm tra Nội dung có chứa kí tự đặc biệt không ?
-            return res.json({
-                status: 'ERR',
-                message: 'Nội dung không hợp lệ!'
-            });
+            return responseError(res, 400, 'content', 'Nội dung không hợp lệ !!! ')
+        } else if (total < 0) {
+            return responseError(res, 400, 'total', 'Tổng số không hợp lệ !!!')
         }
-        else if (total < 0 || stock < 0) {
-            // Kiểm tra total và stock có phải là số âm ?
-            return res.json({
-                status: 'ERR',
-                message: 'Số không hợp lệ!'
-            });
+        else if (stock < 0) {
+            return responseError(res, 400, 'stock', 'Số lượng tồn không hợp lệ !!!')
         }
 
         const createdBook = await Book.create({
@@ -66,7 +49,6 @@ const createBook = async (req, res) => {
 
         // Tìm tác giả thuộc author_ids
         const authorIds = createdBook.author_ids;
-        // console.log("author_ids", createdBook.author_ids);
 
         authorIds.map(async (item) => {
             console.log('Id tac gia: ', item);
@@ -80,24 +62,22 @@ const createBook = async (req, res) => {
 
         if (createdBook) {
             console.log('Tạo mới sách thành công ');
-            res.json({
+            return responseSuccess(res, {
                 status: 'OK',
                 message: 'Tạo mới sách thành công',
                 data: createdBook
-            });
+            }, 200);
         }
     } catch (e) {
-        return res.json({
-            status: 'ERR',
-            message: 'Lỗi tạo mới sách!'
-        })
+        return responseError(res, 500, 'err', 'Tạo mới sách thất bại !!! ')
+
     }
 };
 
 //getAllBook
 const getAllBook = async (req, res) => {
     try {
-        const response = await BookServices.getAllBook();
+        const response = await BookServices.getAllBook(res);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
@@ -120,7 +100,7 @@ const getDetailsBook = async (req, res) => {
         }
 
         console.log('ID của 1 book: ', bookId);
-        const response = await BookServices.getDetailsBook(bookId);
+        const response = await BookServices.getDetailsBook(bookId, res);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(404).json({
@@ -149,50 +129,38 @@ const updateBook = async (req, res) => {
 
         //Kiem tra bookId co hop le
         if (!bookId) {
-            console.log('000')
-            return res.json({
-                status: 'ERR',
-                message: 'Sách này không tồn tại!'
-            });
+            return responseError(res, 400, 'not found', 'Sách này không tồn tại !!! ')
         }
 
         //Kiểm tra 
         if (!name || !year_creation || !description || !content || !total || !stock) {
-            console.log('111');
-            return res.json({
-                status: 'ERR',
-                message: 'Vui lòng điền đầy đủ thông tin!'
-            });
+            return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (isTrueName) {
-            console.log('333');
-            return res.json({
-                status: 'ERR',
-                message: 'Tên sách không hợp lệ !'
-            });
+            return responseError(res, 400, 'name', 'Tên sách không hợp lệ !!! ')
         } else if (isTrueDescription) {
-            return res.json({
-                status: 'ERR',
-                message: 'Mô tả không hợp lệ!'
-            });
+            return responseError(res, 400, 'description', 'Mô tả không hợp lệ !!! ')
+
         } else if (isTrueContent) {
-            return res.json({
-                status: 'ERR',
-                message: 'Nội dung không hợp lệ!'
-            });
+            return responseError(res, 400, 'content', 'Nội dung không hợp lệ !!! ')
+
         } else if (isTrueTotal || total < 0) {
-            return res.json({
-                status: 'ERR',
-                message: 'Tổng số lượng không hợp lệ !'
-            });
+            // return res.json({
+            //     status: 'ERR',
+            //     message: 'Tổng số lượng không hợp lệ !'
+            // });
+            return responseError(res, 400, 'total', 'Tổng số lượng không hợp lệ !!! ')
+
         } else if (isTrueStock || stock < 0) {
-            return res.json({
-                status: 'ERR',
-                message: 'Số lượng tồn không hợp lệ !'
-            });
+            // return res.json({
+            //     status: 'ERR',
+            //     message: 'Số lượng tồn không hợp lệ !'
+            // });
+            return responseError(res, 400, 'stock', 'Số lượng tồn không hợp lệ !!! ')
+
         }
 
         console.log('ID của 1 user: ', bookId);
-        const response = await BookServices.updateBook(bookId, data);
+        const response = await BookServices.updateBook(bookId, data, res);
 
         return res.status(200).json(response);
     } catch (e) {

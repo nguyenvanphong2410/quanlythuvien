@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const Books = require('../models/BookModel');
 const Categories = require("../models/CategoryModel");
 const moment = require("moment");
+const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 
 //getAllUser User Service
@@ -52,29 +53,26 @@ const getDetailsBook = (id) => {
 }
 
 //Update User Service
-const updateBook = (id, data) => {
+const updateBook = (id, data,res) => {
     return new Promise(async (resolve, reject) => {
         try {
             const checkUser = await Books.findOne({ _id: id })
 
             if (checkUser === null) {
-                return res.json({
-                    status: 'ERR',
-                    message: 'Sách này không tồn tại !)'
-                })
+                return responseError(res, 400, 'not found', 'Sách này không tồn tại !!! ')
             }
             const updatedBook = await Books.findByIdAndUpdate(id, data, { new: true });
 
             console.log('Book User', updatedBook);
 
-            resolve({
+            return responseSuccess(res, {
                 status: 'OK',
-                message: 'Cập nhật thông tin thành công ',
+                message: 'Cập nhật thông tin thành công',
                 data: updatedBook
-            })
+            }, 200);
 
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Tạo mới sách thất bại !!! ')
         }
     })
 }
