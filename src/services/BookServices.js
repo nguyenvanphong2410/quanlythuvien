@@ -3,24 +3,28 @@ const Books = require('../models/BookModel');
 const Categories = require("../models/CategoryModel");
 const moment = require("moment");
 const { responseSuccess, responseError } = require('../utils/ResponseHandle');
+const Authors = require("../models/AuthorModel");
 
 
 //getAllUser User Service
 const getAllBook = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allBooks = await Books.find({ deleted_at: null }).populate('category_id');
+            const allBooks = await Books.find({ deleted_at: null }).populate({
+                path: 'category_id',
+                match: { deleted_at: null }
+            });
 
             resolve({
                 status: 'OK',
                 message: 'Lấy ra toàn bộ sách thành công',
                 data: allBooks
-            })
+            });
 
         } catch (e) {
             reject(e);
         }
-    })
+    });
 }
 
 //getDetailsEmployee
@@ -29,8 +33,14 @@ const getDetailsBook = (id) => {
         try {
             //Lấy ra 1 email theo id
             const book = await Books.findOne({ _id: id })
-                .populate('category_id')
-                .populate('author_ids');
+                .populate({
+                    path: 'category_id',
+                    match: { deleted_at: null }
+                })
+                .populate({
+                    path: 'author_ids',
+                    match: { deleted_at: null }
+                })
 
             //Login : Kiem tra user khong ton tai 
             if (book === null) {
@@ -53,7 +63,7 @@ const getDetailsBook = (id) => {
 }
 
 //Update User Service
-const updateBook = (id, data,res) => {
+const updateBook = (id, data, res) => {
     return new Promise(async (resolve, reject) => {
         try {
             const checkUser = await Books.findOne({ _id: id })
@@ -61,13 +71,31 @@ const updateBook = (id, data,res) => {
             if (checkUser === null) {
                 return responseError(res, 400, 'not found', 'Sách này không tồn tại !!! ')
             }
+
+            // Lấy danh sách tác giả ban đầu
+            const initialAuthors = checkUser.author_ids;
+
             const updatedBook = await Books.findByIdAndUpdate(id, data, { new: true });
+
+            // Lấy danh sách tác giả mới
+            const updatedAuthors = updatedBook.author_ids;
+
+            // Kiểm tra và cập nhật trường book_ids trong bảng Author
+            const authorsToUpdate = updatedAuthors.filter(author => !initialAuthors.includes(author));
+
+            await Promise.all(authorsToUpdate.map(async authorId => {
+                const author = await Authors.findOne({ _id: authorId });
+                if (author) {
+                    author.book_ids.push(id);
+                    await author.save();
+                }
+            }));
 
             console.log('Book User', updatedBook);
 
             return responseSuccess(res, {
                 status: 'OK',
-                message: 'Cập nhật thông tin thành công',
+                message: 'Cập nhật sách thành công',
                 data: updatedBook
             }, 200);
 
@@ -78,35 +106,29 @@ const updateBook = (id, data,res) => {
 }
 
 //deleteBook
-const deleteBook = (id) => {
+const deleteBook = (id, res) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const checkBook = await Books.findOne({_id: id})
+            const checkBook = await Books.findOne({ _id: id })
 
-            //Kiem tra sách khong ton tai 
             if (checkBook === null) {
-                resolve({
-                    status: 'ERR',
-                    message: 'Sách không tồn tại'
-                })
+                return responseError(res, 400, 'not found', 'Không tồn tại sách này !!! ')
             }
 
-            //delete
             checkBook.deleted_at = moment();
             await checkBook.save()
 
-            resolve({
-                status: 'OK',
-                message: 'Xóa sách thành công',
-            })
+            return responseSuccess(res, {
+                message: `Xóa ${checkBook.name} thành công`,
+            }, 200);
+
         } catch (e) {
-            reject(e);
+            return responseError(res, 500, 'err', 'Xóa sách thất bại !!! ')
         }
     })
 }
 
 module.exports = {
-    // createUser,
     getAllBook,
     getDetailsBook,
     updateBook,

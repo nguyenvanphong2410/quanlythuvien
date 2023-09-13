@@ -5,10 +5,10 @@ const { responseSuccess, responseError } = require('../utils/ResponseHandle');
 
 
 //getAllUser 
-const getAllAuthor = () => {
+const getAllAuthor = (res) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allAuthor = await Author.find({ deleted_at: null });
+            const allAuthor = await Author.find({ deleted_at: null })
 
             resolve({
                 status: 'OK',
@@ -28,7 +28,11 @@ const getDetailsAuthor = (id, res) => {
     return new Promise(async (resolve, reject) => {
         try {
             //Lấy ra 1 tác giả theo id
-            const author = await Author.findOne({ _id: id }).populate('book_ids');
+            const author = await Author.findOne({ _id: id })
+                .populate({
+                    path: 'book_ids',
+                    match: { deleted_at: null }
+                });
 
             //Kiem tra tác giả khong ton tai 
             if (author === null) {
@@ -84,15 +88,12 @@ const deleteAuthor = (id, res) => {
                 return responseError(res, 400, 'not found', 'Tác giả này không tồn tại !!! ')
             }
 
-            // await checkEmployee.delete()
             checkAuthor.deleted_at = moment();
             await checkAuthor.save()
 
-            resolve({
-                status: 'OK',
-                message: 'Xóa tác giả thành công',
-
-            })
+            return responseSuccess(res, {
+                message: `Xóa ${checkAuthor.name} thành công`,
+            }, 200);
 
         } catch (e) {
             return responseError(res, 500, 'err', 'Xóa tác giả thất bại !!! ')

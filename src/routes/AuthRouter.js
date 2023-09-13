@@ -3,8 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/AuthController');
 
 router.post('/login', authController.loginEmployee);
-router.get('/logout', authController.logoutEmployee);
-router.post('/refresh-token', authController.refreshToken);
+router.post('/logout', authController.logoutEmployee);
+// router.post('/refresh-token', authController.refreshToken);
 
 
 module.exports = router;

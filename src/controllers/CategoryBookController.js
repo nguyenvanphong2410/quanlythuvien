@@ -85,7 +85,6 @@ const updateCategory = async (req, res) => {
         const ishasNumberName = hasNumber.test(name);
         const isTrueDescription = specialCharsDescription.test(description)
 
-
         if (!categoryId) {
             return responseError(res, 400, 'not found', 'Thể loại sách không tồn tại !!! ')
         }
@@ -118,19 +117,13 @@ const deleteCategory = async (req, res) => {
 
         //Kiem tra categoryId co hop le
         if (!categoryId) {
-            return res.status(200).join({
-                status: 'ERR',
-                message: 'Không tồn tại thể loại sách'
-            });
+            return responseError(res, 400, 'not found', 'Không tồn tại thể loại sách này !!! ')
         }
 
         const response = await CategoryServices.deleteCategory(categoryId, res);
         return res.status(200).json(response);
     } catch (e) {
-        console.log(e)
-        return res.status(404).json({
-            message: 'Lỗi Xóa thể loại sách'
-        })
+        return responseError(res, 500, 'err', 'Xóa thể loại sách thất bại !!! ')
     }
 };
 

@@ -29,14 +29,14 @@ const createEmployee = (newEmployee, res) => {
 
             if (createdEmployee) {
                 console.log('Tạo người dùng thành công ');
-                return responseSuccess(res, { 
+                return responseSuccess(res, {
                     status: 'OK',
                     message: 'Đăng ký thành công',
                 }, 200);
 
             }
         } catch (e) {
-            return responseError(res, 500, 'err','Tạo mới nhân viên thất bại !!! ')
+            return responseError(res, 500, 'err', 'Tạo mới nhân viên thất bại !!! ')
         }
     })
 }
@@ -54,7 +54,7 @@ const getAllUser = () => {
             })
 
         } catch (e) {
-            return responseError(res, 500, 'err','Lấy ra toàn bộ nhân viên thất bại !!! ')
+            return responseError(res, 500, 'err', 'Lấy ra toàn bộ nhân viên thất bại !!! ')
         }
     })
 }
@@ -82,48 +82,14 @@ const updateEmployee = (id, data, res) => {
 
             console.log('Update User', updatedUser);
 
-            return responseSuccess(res, { 
+            return responseSuccess(res, {
                 status: 'OK',
                 message: 'Cập nhật thông tin thành công',
                 data: updatedUser
             }, 200);
 
         } catch (e) {
-            return responseError(res, 500, 'err','Cập nhật nhân viên thất bại !!! ')
-        }
-    })
-}
-
-//deleteEmployee
-const deleteEmployee = (id) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            //Lấy ra 1 email 1phone
-            const checkEmployee = await Employee.findOne({
-                _id: id
-            })
-            console.log('Check User', checkEmployee);
-
-            //Login : Kiem tra user khong ton tai 
-            if (checkEmployee === null) {
-                resolve({
-                    status: 'ERR',
-                    message: 'Nhân viên không tồn tại'
-                })
-            }
-
-            // await checkEmployee.delete()
-            checkEmployee.deleted_at = moment();
-            await checkEmployee.save()
-
-            resolve({
-                status: 'OK',
-                message: 'Xóa nhân viên thành công',
-
-            })
-
-        } catch (e) {
-            return responseError(res, 500, 'err','Xóa nhân viên thất bại !!! ')
+            return responseError(res, 500, 'err', 'Cập nhật nhân viên thất bại !!! ')
         }
     })
 }
@@ -158,11 +124,35 @@ const getDetailsEmployee = (id) => {
     })
 }
 
+//deleteEmployee
+const deleteEmployee = (id, res) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const checkEmployee = await Employee.findOne({ _id: id })
+
+            if (checkEmployee === null) {
+                return responseError(res, 400, 'not found', 'Không tồn tại nhân viên này !!! ')
+            }
+
+            checkEmployee.deleted_at = moment();
+            await checkEmployee.save()
+
+            return responseSuccess(res, {
+                message: `Xóa ${checkEmployee.name} thành công`,
+            }, 200);
+
+        } catch (e) {
+            return responseError(res, 500, 'err', 'Xóa nhân viên thất bại !!! ')
+        }
+    })
+}
+
+
 module.exports = {
     createEmployee,
     updateEmployee,
     getDetailsEmployee,
-    deleteEmployee,
     getAllUser,
+    deleteEmployee,
 
 }

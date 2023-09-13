@@ -35,7 +35,7 @@ const createUser = async (req, res) => {
         return res.json(response);
 
     } catch (e) {
-        return responseError(res, 500, 'err','Tạo mới nhân viên thất bại !!! ')
+        return responseError(res, 500, 'err', 'Tạo mới nhân viên thất bại !!! ')
     }
 };
 
@@ -73,7 +73,7 @@ const updateEmployee = async (req, res) => {
         if (!userId) {
             return responseError(res, 400, 'not found', 'Nhân viên không tồn tại !!! ')
         }
-        
+
         if (!name || !email || !phone) {
             return responseError(res, 400, 'null', 'Thông tin trống !!! ')
         } else if (!isCheckEmail) {
@@ -91,35 +91,11 @@ const updateEmployee = async (req, res) => {
 
         return res.status(200).json(response);
     } catch (e) {
-        return responseError(res, 500, 'err','Cập nhật nhân viên thất bại !!! ')
+        return responseError(res, 500, 'err', 'Cập nhật nhân viên thất bại !!! ')
 
     }
 };
 
-//deleteEmployee
-const deleteEmployee = async (req, res) => {
-    try {
-        const employeeId = req.params.id
-        // const token = req.headers
-
-        //Kiem tra employeeId co hop le
-        if (!employeeId) {
-            return res.status(200).join({
-                status: 'ERR',
-                message: 'Khong ton tai nhan vien'
-            });
-        }
-
-        console.log('ID của 1 employee: ', employeeId);
-        const response = await EmployeeService.deleteEmployee(employeeId);
-        return res.status(200).json(response);
-    } catch (e) {
-        console.log(e)
-        return res.status(404).json({
-            message: 'deleteEmployee Lỗi '
-        })
-    }
-};
 
 
 //getDetailsEmployee
@@ -186,6 +162,23 @@ const getInfoEmployee = async (req, res) => {
         return res.status(404).json({
             message: ' get-info Loi nha, '
         })
+    }
+};
+
+//deleteEmployee
+const deleteEmployee = async (req, res) => {
+    try {
+        const employeeId = req.params.id
+
+        if (!employeeId) {
+            return responseError(res, 400, 'not found', 'Không tồn tại nhân viên này !!! ')
+        }
+
+        console.log('ID của 1 employee: ', employeeId);
+        const response = await EmployeeService.deleteEmployee(employeeId, res);
+        return res.status(200).json(response);
+    } catch (e) {
+        return responseError(res, 500, 'err', 'Xóa nhân viên thất bại !!! ')
     }
 };
 

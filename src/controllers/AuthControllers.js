@@ -1,5 +1,3 @@
-const jwt = require("jsonwebtoken");
-const NodeCache = require("node-cache");
 const Employee = require('../models//EmployeeModel')
 const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('../services/JwtServices');
@@ -12,7 +10,6 @@ const loginEmployee = async (req, res) => {
         const { email, password } = req.body;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
         const isCheckEmail = reg.test(email);
-        // console.log('hihi')
 
         if (!email || !password) {
             return responseError(res, 400, 'not found', 'Không tìm thấy email pasword !!!')
@@ -38,7 +35,11 @@ const loginEmployee = async (req, res) => {
         }
 
         //Tao token
-        var token = jwt.sign({ email: checkUser.email }, 'access_token', {
+        var token = jwt.sign({
+            id: checkUser.id,
+            email: checkUser.email,
+            name: checkUser.name,
+        }, 'access_token', {
             expiresIn: '24h'
         });
 
@@ -47,51 +48,37 @@ const loginEmployee = async (req, res) => {
         return responseSuccess(res, { 'token': token, 'expire_in': 86400000, 'auth_type': 'Bearer Token' }, 200)
 
     } catch (error) {
+        // logger.error({
+        //     message: "Error login",
+        //     detail: error
+        // });
         console.log(error)
         return responseError(res, 500, 'err', 'Server Error')
     }
-
-};
-// //refreshToken
-// const refreshToken = async (req, res) => {
-//     try {
-//         const token = req.headers.token.split(' ')[1];
-//         const userId = req.params.id
-
-//         //Kiem tra userId co hop le
-//         if (!token) {
-//             return responseError(res, 400, 'Token không hợp lệ !!! ')
-//         }
-
-//         const response = await JwtServices.refreshTokenJwtService(token);
-//         return responseSuccess(res, response , 200);
-//     } catch (e) {
-//         return responseError(res, 500, 'Lỗi refresh token !!! ')
-//     }
-// };
+}
 
 const logoutEmployee = async (req, res) => {
     try {
         let token = req.headers['x-access-token'] || req.headers['authorization'];
-        console.log('token la: ', token);
         token = token.replace(/^Bearer\s+/, "");
-        console.log('token', token)
-        if (token) {
-            const tokenCacheExpire = new NodeCache();
-            const decoded = jwt.decode(token);
-            console.log('decoded', decoded)
 
+        if (token) {
+            const decoded = jwt.decode(token);
             const expiresIn = decoded.exp;
             tokenCacheExpire.set(token, token, expiresIn)
         }
 
-        return responseSuccess(res, 'OKKK')
+        return responseSuccess(res, 'OK')
 
     } catch (error) {
-        console.log(error)
-        return responseError(res, 500, 'err', 'Server Error Logout')
+        logger.error({
+            message: "Error logout",
+            detail: error
+        });
+        return responseError(res, 500, 'err','Server Error')
     }
-};
+}
+
 
 module.exports = {
     loginEmployee,

@@ -99,7 +99,7 @@ const getDetailsBook = async (req, res) => {
             });
         }
 
-        console.log('ID của 1 book: ', bookId);
+        console.log('BookDeatails ID : ', bookId);
         const response = await BookServices.getDetailsBook(bookId, res);
         return res.status(200).json(response);
     } catch (e) {
@@ -139,24 +139,12 @@ const updateBook = async (req, res) => {
             return responseError(res, 400, 'name', 'Tên sách không hợp lệ !!! ')
         } else if (isTrueDescription) {
             return responseError(res, 400, 'description', 'Mô tả không hợp lệ !!! ')
-
         } else if (isTrueContent) {
             return responseError(res, 400, 'content', 'Nội dung không hợp lệ !!! ')
-
         } else if (isTrueTotal || total < 0) {
-            // return res.json({
-            //     status: 'ERR',
-            //     message: 'Tổng số lượng không hợp lệ !'
-            // });
             return responseError(res, 400, 'total', 'Tổng số lượng không hợp lệ !!! ')
-
         } else if (isTrueStock || stock < 0) {
-            // return res.json({
-            //     status: 'ERR',
-            //     message: 'Số lượng tồn không hợp lệ !'
-            // });
             return responseError(res, 400, 'stock', 'Số lượng tồn không hợp lệ !!! ')
-
         }
 
         console.log('ID của 1 user: ', bookId);
@@ -164,9 +152,7 @@ const updateBook = async (req, res) => {
 
         return res.status(200).json(response);
     } catch (e) {
-        return res.status(404).json({
-            message: 'Lỗi cập nhật thông tin sách'
-        })
+        return responseError(res, 500, 'err', 'Cập nhật thất bại !!! ')
     }
 };
 
@@ -175,21 +161,14 @@ const deleteBook = async (req, res) => {
     try {
         const bookId = req.params.id
 
-        //Kiem tra bookId co hop le
         if (!bookId) {
-            return res.status(200).join({
-                status: 'ERR',
-                message: 'Không tồn tại sách'
-            });
+            return responseError(res, 400, 'not found', 'Không tồn tại sách này !!! ')
         }
 
-        const response = await BookServices.deleteBook(bookId);
+        const response = await BookServices.deleteBook(bookId,res);
         return res.status(200).json(response);
     } catch (e) {
-        console.log(e)
-        return res.status(404).json({
-            message: 'Lỗi xóa sách'
-        })
+        return responseError(res, 500, 'err', 'Xóa sách thất bại !!! ')
     }
 };
 

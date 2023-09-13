@@ -77,28 +77,21 @@ const updateCategory = (id, data, res) => {
 const deleteCategory = (id, res) => {
     return new Promise(async (resolve, reject) => {
         try {
-            //Lấy ra 1 email 1phone
             const checkCategory = await Category.findOne({ _id: id })
 
-            //Kiem tra tác giả khong ton tai 
             if (checkCategory === null) {
-                resolve({
-                    status: 'ERR',
-                    message: 'Thể loại không tồn tại'
-                })
+                return responseError(res, 400, 'not found', 'Không tồn tại thể loại sách này !!! ')
             }
 
-            // await checkCategory delte
             checkCategory.deleted_at = moment();
             await checkCategory.save()
 
-            resolve({
-                status: 'OK',
-                message: 'Xóa thể loại sách thành công',
-
-            })
+            return responseSuccess(res, {
+                message: `Xóa ${checkCategory.name} thành công`,
+            }, 200);
 
         } catch (e) {
+            console.log('loi nay nha ', e)
             return responseError(res, 500, 'err','Xóa thể loại sách thất bại !!! ')
         }
     })
